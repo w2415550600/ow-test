@@ -1,0 +1,340 @@
+// QAXD 全局颜色系统 (SCSS)
+// Source: https://wiki.qianxin-inc.cn/pages/viewpage.action?pageId=878207134
+// Version: 1.0.6 (Sync with Theme Protocol Spec)
+
+// =============================================================================
+// I. 基础色盘 (Primitive Tokens)
+// 包含 102 个感知均匀的梯度色盘。通常不建议直接在业务代码中使用。
+// =============================================================================
+
+// 品牌色 (Brand)
+$primitive-brand-1: #E8F0FF;
+$primitive-brand-2: #BBD1FD;
+$primitive-brand-3: #8FB3FB;
+$primitive-brand-4: #6495F8;
+$primitive-brand-5: #3A79F6;
+$primitive-brand-6-light: #105CF4;
+$primitive-brand-6-dark: #3676F6;
+$primitive-brand-7-light: #0A4ACA;
+$primitive-brand-7-dark: #6194F8;
+
+// 成功色 (Green)
+$primitive-green-1: #E8FFED;
+$primitive-green-2: #AFF1BE;
+$primitive-green-3-light: #7CE394;
+$primitive-green-3-dark: #0A8226;
+$primitive-green-4-light: #4DD46D;
+$primitive-green-4-dark: #139D33;
+$primitive-green-5-light: #24C64A;
+$primitive-green-5-dark: #1DB842;
+$primitive-green-6-light: #00B82B;
+$primitive-green-6-dark: #28C64D;
+$primitive-green-7-light: #009D25;
+$primitive-green-7-dark: #50D46F;
+
+// 警示色 (Orange)
+$primitive-orange-1: #FFF4E8;
+$primitive-orange-2: #FDDCBB;
+$primitive-orange-3-light: #FBC58F;
+$primitive-orange-3-dark: #A0580F;
+$primitive-orange-4-light: #F8AE64;
+$primitive-orange-4-dark: #CA731B;
+$primitive-orange-5-light: #F6983A;
+$primitive-orange-5-dark: #F48F2B;
+$primitive-orange-6-light: #F48210;
+$primitive-orange-6-dark: #F69636;
+$primitive-orange-7-light: #CA6A0A;
+$primitive-orange-7-dark: #F8AD61;
+
+// 危险色 (Red)
+$primitive-red-1: #FFE8EA;
+$primitive-red-2: #FDC0C5;
+$primitive-red-3-light: #FB99A1;
+$primitive-red-3-dark: #A01420;
+$primitive-red-4-light: #F8727D;
+$primitive-red-4-dark: #CA2634;
+$primitive-red-5-light: #F74C5B;
+$primitive-red-5-dark: #F43D4C;
+$primitive-red-6-light: #F42738;
+$primitive-red-6-dark: #F74D5B;
+$primitive-red-7-light: #CA1827;
+$primitive-red-7-dark: #F8727D;
+$primitive-red-8-light: #A00D19;
+$primitive-red-8-dark: #A01420;
+
+// 信息色 (Blue)
+$primitive-blue-1: #E8F4FF;
+$primitive-blue-2: #BBDCFD;
+$primitive-blue-3-light: #8FC5FB;
+$primitive-blue-3-dark: #0F58A0;
+$primitive-blue-4-light: #64AEF8;
+$primitive-blue-4-dark: #1B73CA;
+$primitive-blue-5-light: #3A98F6;
+$primitive-blue-5-dark: #2B8FF4;
+$primitive-blue-6-light: #1082F4;
+$primitive-blue-6-dark: #3696F6;
+$primitive-blue-7-light: #0A6ACA;
+$primitive-blue-7-dark: #61ADF8;
+
+// 中性色 (Gray)
+$primitive-gray-0-light: #FFFFFF;
+$primitive-gray-0-dark: #16181C;
+$primitive-gray-1-light: #F8F8F9;
+$primitive-gray-1-dark: #20242A;
+$primitive-gray-2-light: #F3F3F4;
+$primitive-gray-2-dark: #292D35;
+$primitive-gray-3-light: #ECEDEF;
+$primitive-gray-3-dark: #373C47;
+$primitive-gray-5-light: #C8CBD1;
+$primitive-gray-5-dark: #555E6E;
+$primitive-gray-6-light: #A8ADB6;
+$primitive-gray-6-dark: #6F7787;
+$primitive-gray-8-light: #6D7585;
+$primitive-gray-8-dark: #A6ABB4;
+$primitive-gray-10-light: #292D35;
+$primitive-gray-10-dark: #DDDFE3;
+$primitive-gray-11-light: #1E2127;
+$primitive-gray-11-dark: #F6F6F7;
+
+// =============================================================================
+// II. 主题 Token 映射 (Semantic Tokens)
+// =============================================================================
+
+:root {
+  // --- 强调色 (Accent) ---
+  --color-accent: #{$primitive-brand-6-light};
+  --color-accent-hover: #{$primitive-brand-5};
+  --color-accent-active: #{$primitive-brand-7-light};
+  --color-accent-focus: #{$primitive-brand-4};
+  --color-accent-disabled: #{$primitive-brand-3};
+  --color-accent-foreground: #{$primitive-gray-0-light};
+  --color-accent-foreground-disabled: rgba(255, 255, 255, 0.65);
+  --color-accent-fill: #{$primitive-brand-1};
+  --color-accent-fill-hover: #{$primitive-brand-2};
+  --color-accent-fill-active: #{$primitive-brand-3};
+  --color-accent-fill-disabled: #{$primitive-brand-1};
+  --color-accent-border: #{$primitive-brand-6-light};
+  --color-accent-border-hover: #{$primitive-brand-5};
+  --color-accent-border-active: #{$primitive-brand-7-light};
+  --color-accent-border-disabled: #{$primitive-brand-3};
+  --color-accent-text: #{$primitive-brand-6-light};
+  --color-accent-text-hover: #{$primitive-brand-5};
+  --color-accent-text-active: #{$primitive-brand-7-light};
+  --color-accent-text-disabled: #{$primitive-brand-3};
+
+  // --- 成功色 (Success) ---
+  --color-success: #{$primitive-green-6-light};
+  --color-success-hover: #{$primitive-green-5-light};
+  --color-success-active: #{$primitive-green-7-light};
+  --color-success-focus: #{$primitive-green-4-light};
+  --color-success-disabled: #{$primitive-green-3-light};
+  --color-success-foreground: #{$primitive-gray-0-light};
+  --color-success-foreground-disabled: rgba(255, 255, 255, 0.65);
+  --color-success-fill: #{$primitive-green-1};
+  --color-success-fill-hover: #{$primitive-green-2};
+  --color-success-fill-active: #{$primitive-green-3-light};
+  --color-success-fill-disabled: #{$primitive-green-1};
+  --color-success-border: #{$primitive-green-6-light};
+  --color-success-text: #{$primitive-green-6-light};
+
+  // --- 警示色 (Warning) ---
+  --color-warning: #{$primitive-orange-6-light};
+  --color-warning-hover: #{$primitive-orange-5-light};
+  --color-warning-active: #{$primitive-orange-7-light};
+  --color-warning-focus: #{$primitive-orange-4-light};
+  --color-warning-disabled: #{$primitive-orange-3-light};
+  --color-warning-foreground: #{$primitive-gray-0-light};
+  --color-warning-foreground-disabled: rgba(255, 255, 255, 0.65);
+  --color-warning-fill: #{$primitive-orange-1};
+  --color-warning-fill-hover: #{$primitive-orange-2};
+  --color-warning-fill-active: #{$primitive-orange-3-light};
+  --color-warning-fill-disabled: #{$primitive-orange-1};
+  --color-warning-border: #{$primitive-orange-6-light};
+  --color-warning-text: #{$primitive-orange-6-light};
+
+  // --- 危险色 (Danger) ---
+  --color-danger: #{$primitive-red-6-light};
+  --color-danger-hover: #{$primitive-red-5-light};
+  --color-danger-active: #{$primitive-red-7-light};
+  --color-danger-focus: #{$primitive-red-4-light};
+  --color-danger-disabled: #{$primitive-red-3-light};
+  --color-danger-foreground: #{$primitive-gray-0-light};
+  --color-danger-foreground-disabled: rgba(255, 255, 255, 0.65);
+  --color-danger-fill: #{$primitive-red-1};
+  --color-danger-fill-hover: #{$primitive-red-2};
+  --color-danger-fill-active: #{$primitive-red-3-light};
+  --color-danger-fill-disabled: #{$primitive-red-1};
+  --color-danger-border: #{$primitive-red-6-light};
+  --color-danger-text: #{$primitive-red-6-light};
+
+  // --- 信息色 (Info) ---
+  --color-info: #{$primitive-blue-6-light};
+  --color-info-hover: #{$primitive-blue-5-light};
+  --color-info-active: #{$primitive-blue-7-light};
+  --color-info-focus: #{$primitive-blue-4-light};
+  --color-info-disabled: #{$primitive-blue-3-light};
+  --color-info-foreground: #{$primitive-gray-0-light};
+  --color-info-foreground-disabled: rgba(255, 255, 255, 0.65);
+  --color-info-fill: #{$primitive-blue-1};
+  --color-info-fill-hover: #{$primitive-blue-2};
+  --color-info-fill-active: #{$primitive-blue-3-light};
+  --color-info-fill-disabled: #{$primitive-blue-1};
+  --color-info-border: #{$primitive-blue-6-light};
+  --color-info-text: #{$primitive-blue-6-light};
+
+  // --- 中性色 (Neutral) ---
+  --color-text-primary: #{$primitive-gray-11-light};
+  --color-text-secondary: #{$primitive-gray-10-light};
+  --color-text-tertiary: #{$primitive-gray-8-light};
+  --color-text-quaternary: rgba(168, 173, 182, 0.65);
+
+  --color-border-primary: #{$primitive-gray-5-light};
+  --color-border-secondary: #{$primitive-gray-3-light};
+  --color-border-tertiary: #{$primitive-gray-3-light};
+
+  --color-fill-primary: #{$primitive-gray-0-light};
+  --color-fill-secondary: #{$primitive-gray-2-light};
+  --color-fill-hover: #{$primitive-gray-3-light};
+  --color-fill-active: #{$primitive-brand-1};
+  --color-fill-disabled: rgba(200, 203, 209, 0.2);
+
+  --color-background: #{$primitive-gray-0-light};
+  --color-background-sunken: #{$primitive-gray-2-light};
+  --color-background-elevated: #{$primitive-gray-0-light};
+  --color-background-overlay: #{$primitive-gray-0-light};
+  --color-background-accent: #{$primitive-gray-1-light};
+  --color-background-reverse: #{$primitive-gray-10-light};
+
+  --color-mask: rgba(30, 33, 39, 0.5);
+
+  // --- 链接颜色 (Link) ---
+  --color-link: #{$primitive-blue-6-light};
+  --color-link-hover: #{$primitive-blue-5-light};
+  --color-link-active: #{$primitive-blue-7-light};
+  --color-link-visited: #{$primitive-blue-3-light};
+
+  // --- 业务状态色 (State) ---
+  --color-state-threat-critical: #{$primitive-red-8-light};
+  --color-state-threat-high: #{$primitive-red-6-light};
+  --color-state-threat-medium: #{$primitive-orange-6-light};
+  --color-state-threat-low: #F4CB00; // Yellow-6
+  --color-state-threat-security: #{$primitive-green-6-light};
+  --color-state-threat-unknown: #{$primitive-gray-6-light};
+
+  // --- 数据可视化颜色 (Data) ---
+  --color-data-1: #1082F4; --color-data-2: #8FC5FB; --color-data-3: #4E56F4;
+  --color-data-4: #A9ADFB; --color-data-5: #A810F4; --color-data-6: #D78FFB;
+  --color-data-7: #E60FC2; --color-data-8: #F58CE3; --color-data-9: #F48210;
+  --color-data-10: #FBC58F; --color-data-11: #0FC8ED; --color-data-12: #8EE6F8;
+  --color-data-13: #F42738; --color-data-14: #FB99A1; --color-data-15: #00B82B;
+  --color-data-16: #7CE394; --color-data-17: #F4CB00; --color-data-18: #FBE889;
+}
+
+[data-theme='dark'] {
+  // --- 强调色 (Accent) ---
+  --color-accent: #{$primitive-brand-6-dark};
+  --color-accent-hover: #{$primitive-brand-7-dark};
+  --color-accent-active: #{$primitive-brand-5};
+  --color-accent-focus: #1B56CA;
+  --color-accent-disabled: #0F40A0;
+  --color-accent-foreground: #{$primitive-gray-11-dark};
+  --color-accent-foreground-disabled: rgba(246, 246, 247, 0.35);
+  --color-accent-fill: #011A4D;
+  --color-accent-fill-hover: #0F40A0;
+  --color-accent-fill-active: #072C76;
+  --color-accent-fill-disabled: #011A4D;
+  --color-accent-border: #{$primitive-brand-6-dark};
+  --color-accent-text: #{$primitive-brand-6-dark};
+
+  // --- 成功色 (Success) ---
+  --color-success: #{$primitive-green-6-dark};
+  --color-success-hover: #{$primitive-green-7-dark};
+  --color-success-active: #{$primitive-green-5-dark};
+  --color-success-focus: #139D33;
+  --color-success-disabled: #0A8226;
+  --color-success-foreground: #{$primitive-gray-11-dark};
+  --color-success-foreground-disabled: rgba(246, 246, 247, 0.35);
+  --color-success-fill: #004D12;
+  --color-success-fill-hover: #0A8226;
+  --color-success-fill-active: #04671B;
+  --color-success-fill-disabled: #004D12;
+  --color-success-border: #{$primitive-green-6-dark};
+  --color-success-text: #{$primitive-green-6-dark};
+
+  // --- 警示色 (Warning) ---
+  --color-warning: #{$primitive-orange-6-dark};
+  --color-warning-hover: #{$primitive-orange-7-dark};
+  --color-warning-active: #{$primitive-orange-5-dark};
+  --color-warning-focus: #CA731B;
+  --color-warning-disabled: #A0580F;
+  --color-warning-foreground: #{$primitive-gray-11-dark};
+  --color-warning-foreground-disabled: rgba(246, 246, 247, 0.35);
+  --color-warning-fill: #4D2701;
+  --color-warning-fill-hover: #A0580F;
+  --color-warning-fill-active: #763E07;
+  --color-warning-fill-disabled: #4D2701;
+  --color-warning-border: #{$primitive-orange-6-dark};
+  --color-warning-text: #{$primitive-orange-6-dark};
+
+  // --- 危险色 (Danger) ---
+  --color-danger: #{$primitive-red-6-dark};
+  --color-danger-hover: #{$primitive-red-7-dark};
+  --color-danger-active: #{$primitive-red-5-dark};
+  --color-danger-focus: #CA2634;
+  --color-danger-disabled: #A01420;
+  --color-danger-foreground: #{$primitive-gray-11-dark};
+  --color-danger-foreground-disabled: rgba(246, 246, 247, 0.35);
+  --color-danger-fill: #4D0107;
+  --color-danger-fill-hover: #A01420;
+  --color-danger-fill-active: #760811;
+  --color-danger-fill-disabled: #4D0107;
+  --color-danger-border: #{$primitive-red-6-dark};
+  --color-danger-text: #{$primitive-red-6-dark};
+
+  // --- 信息色 (Info) ---
+  --color-info: #{$primitive-blue-6-dark};
+  --color-info-hover: #{$primitive-blue-7-dark};
+  --color-info-active: #{$primitive-blue-5-dark};
+  --color-info-focus: #1B73CA;
+  --color-info-disabled: #0F58A0;
+  --color-info-foreground: #{$primitive-gray-11-dark};
+  --color-info-foreground-disabled: rgba(246, 246, 247, 0.35);
+  --color-info-fill: #01274D;
+  --color-info-fill-hover: #0F58A0;
+  --color-info-fill-active: #073E76;
+  --color-info-fill-disabled: #01274D;
+  --color-info-border: #{$primitive-blue-6-dark};
+  --color-info-text: #{$primitive-blue-6-dark};
+
+  // --- 中性色 (Neutral) ---
+  --color-text-primary: #{$primitive-gray-11-dark};
+  --color-text-secondary: #{$primitive-gray-10-dark};
+  --color-text-tertiary: #{$primitive-gray-8-dark};
+  --color-text-quaternary: rgba(246, 246, 247, 0.35);
+
+  --color-border-primary: rgba(246, 246, 247, 0.2);
+  --color-border-secondary: rgba(246, 246, 247, 0.1);
+  --color-border-tertiary: rgba(246, 246, 247, 0.1);
+
+  --color-fill-primary: rgba(246, 246, 247, 0);
+  --color-fill-secondary: rgba(246, 246, 247, 0.1);
+  --color-fill-hover: rgba(246, 246, 247, 0.15);
+  --color-fill-active: rgba(246, 246, 247, 0.1);
+  --color-fill-disabled: rgba(246, 246, 247, 0.06);
+
+  --color-background: #20242A;
+  --color-background-sunken: #16181C;
+  --color-background-elevated: #373C47;
+  --color-background-overlay: #292D35;
+  --color-background-accent: rgba(246, 246, 247, 0.06);
+
+  --color-mask: rgba(22, 24, 28, 0.5);
+  
+  // --- 威胁等级 (Threat) ---
+  --color-state-threat-critical: #A01420;
+  --color-state-threat-high: #F74D5B;
+  --color-state-threat-medium: #F69636;
+  --color-state-threat-low: #F6D531;
+  --color-state-threat-security: #28C64D;
+  --color-state-threat-unknown: #6F7787;
+}

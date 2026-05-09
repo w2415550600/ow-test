@@ -1,0 +1,31 @@
+// QAXD 圆角与阴影规范 (SCSS)
+// Source: RadiusShadow.md
+
+// 1. 圆角 (Corner Radius)
+$radius-content:   2px;
+$radius-wrapper:   4px;
+$radius-container: 6px;
+$radius-outer:     8px;
+
+// 2. 阴影 (Shadows) - 基础颜色参考
+$shadow-color-light: rgba(30, 33, 39, 0.1);
+$shadow-color-dark:  rgba(0, 0, 0, 0.4);
+
+:root {
+  --radius-content: #{$radius-content};
+  --radius-wrapper: #{$radius-wrapper};
+  --radius-container: #{$radius-container};
+  --radius-outer: #{$radius-outer};
+
+  --shadow-l1: 0 1px 2px 0 #{$shadow-color-light};
+  --shadow-l2: 0 4px 8px 0 #{$shadow-color-light};
+  --shadow-l3: 0 8px 16px 4px #{$shadow-color-light};
+  --shadow-l4: 0 12px 24px 8px #{$shadow-color-light};
+}
+
+[data-theme='dark'] {
+  --shadow-l1: 0 1px 2px 0 #{$shadow-color-dark};
+  --shadow-l2: 0 4px 8px 0 #{$shadow-color-dark};
+  --shadow-l3: 0 8px 16px 4px #{$shadow-color-dark};
+  --shadow-l4: 0 12px 24px 8px #{$shadow-color-dark};
+}

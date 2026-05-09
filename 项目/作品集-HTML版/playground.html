@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Playground - 王建宇作品集</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body class="page-playground">
+  <nav class="nav container">
+    <div class="logo">Jianyu Wang</div>
+    <div class="nav-links">
+      <a href="work.html">Work</a>
+      <a href="playground.html">Playground</a>
+      <a href="#" class="resume-btn" onclick="event.preventDefault()">Resume ↓</a>
+      <a href="about.html">About</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="container"><div class="pg-divider"></div></div>
+    <section class="playground-hero container">
+  <div class="pg-basic-info g-fade-up">
+        <p class="pg-meta">2021- 2026 <span class="pg-mode-switch"><button class="pg-mode-btn active" data-mode="orbit">Orbit</button><span class="pg-mode-divider">/</span><button class="pg-mode-btn" data-mode="stack">Stack</button></span></p>
+        <div class="pg-introduce">
+          <h2 class="pg-title">Playground</h2>
+          <p class="pg-desc">这是我的创意培养皿。在这个不受限的空间里，我通过 3D 渲染、动态图形和字体实验，不断挑战自我审美定义的舒适区。这里是逻辑的边界，也是创意的原点。在正式的命题作文之外，我将此地视为精神的“避难所”与“试验台”。这里不设终点，不问结果，仅记录关于光影、构图、动态与新兴媒介的即兴碰撞。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="playground-stage">
+        <div id="ring-container"></div>
+    </section>
+
+      <!-- Reuse footer from work.html -->
+      <footer class="footer">
+        <div class="container">
+          <div class="footer-top">
+            <div>
+              <strong>Contact</strong>
+              <a href="mailto:w2415550600@gmail.com">w2415550600@gmail.com</a>
+            </div>
+            <div>
+              <strong>Location</strong>
+              <span>Chengdu</span>
+            </div>
+            <div>
+              <strong>Resume</strong>
+              <a href="#" onclick="event.preventDefault()">Jianyu Wang ↓</a>
+            </div>
+            <div>
+              <strong>Socials</strong>
+              <a href="#">Zcool</a>
+              <a href="#">Dribbble</a>
+              <a href="#">Behance</a>
+            </div>
+          </div>
+          <div class="footer-giant">
+            <div><a href="work.html" class="footer-link"><span class="text-inner">Work.</span></a></div>
+            <div><a href="playground.html" class="footer-link"><span class="text-inner">Playground.</span></a></div>
+            <div><a href="#" class="footer-link"><span class="text-inner">Resume.</span></a></div>
+            <div><a href="about.html" class="footer-link"><span class="text-inner">About.</span></a></div>
+          </div>
+        </div>
+      </footer>
+  </main>
+
+  <!-- Modal for detail -->
+  <div id="pg-modal" class="pg-modal" aria-hidden="true">
+    <div class="pg-modal-backdrop"></div>
+    <div class="pg-modal-content">
+      <button id="pg-modal-close" class="pg-modal-close">×</button>
+      <div class="pg-modal-body">
+        <img id="pg-modal-img" src="" alt="preview" />
+        <div class="pg-modal-desc">
+          <h3 id="pg-modal-title">标题</h3>
+          <p id="pg-modal-text">简介文本</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+  <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+  <script src="./main.js"></script>
+  <script src="./playground.js"></script>
+</body>
+</html>

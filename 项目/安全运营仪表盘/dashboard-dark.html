@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>安全运营仪表盘 - 深色模式</title>
+<style>
+/* ========== QAX Design System Tokens — Dark Mode ========== */
+:root,
+[data-theme="dark"] {
+  /* 主色 */
+  --color-accent: #3676F6;
+  --color-accent-hover: #6194F8;
+  --color-accent-active: #3A79F6;
+  --color-accent-fg: #FFFFFF;
+  --color-text-primary: #F6F6F7;
+  --color-text-secondary: #DDDFE3;
+  --color-text-auxiliary: #A6ABB4;
+  --color-text-placeholder: rgba(246,246,247,0.35);
+
+  /* 表面层级（从抬升到下沉） */
+  --color-bg-elevated: #373C47;
+  --color-bg-overlay: #292D35;
+  --color-bg-container: #20242A;
+  --color-bg-sunken: #16181C;
+  --color-bg-accent: rgba(246,246,247,0.06);
+
+  /* 边框 */
+  --color-border-primary: rgba(246,246,247,0.2);
+  --color-border-secondary: rgba(246,246,247,0.1);
+  --color-fill-hover: rgba(246,246,247,0.15);
+  --color-accent-fill: #011A4D;
+
+  /* 语义 */
+  --color-success: #28C64D;
+  --color-warning: #F69636;
+  --color-danger: #F74D5B;
+  --color-info: #3696F6;
+
+  /* 安全域 */
+  --color-threat-critical: #A01420;
+  --color-threat-high: #F74D5B;
+  --color-threat-medium: #F69636;
+  --color-threat-low: #F6D531;
+  --color-threat-safe: #28C64D;
+  --color-threat-unknown: #6F7787;
+
+  /* 圆角 */
+  --radius-content: 2px;
+  --radius-wrapper: 4px;
+  --radius-container: 6px;
+  --radius-outer: 8px;
+
+  /* 间距 */
+  --spacing-compact: 4px;
+  --spacing-standard: 8px;
+  --spacing-loose: 16px;
+  --spacing-wide: 24px;
+  --spacing-vast: 32px;
+
+  /* 布局 */
+  --layout-gutter: 16px;
+  --layout-header-height: 56px;
+  --layout-sidebar-width: 216px;
+
+  /* 阴影 */
+  --shadow-l1: 0 1px 2px 0 rgba(0,0,0,0.3);
+  --shadow-l2: 0 4px 8px 0 rgba(0,0,0,0.3);
+  --shadow-focus: 0 0 0 2px rgba(100,149,248,0.5);
+
+  /* 侧栏装饰径向光晕 */
+  --sidebar-glow: radial-gradient(circle, rgba(61,83,247,0.08) 0%, transparent 70%);
+}
+
+/* ========== Reset & Base ========== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  min-width: 1024px;
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-sunken);
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ========== Layout Shell ========== */
+.app-layout {
+  display: flex;
+  width: 100%; height: 100vh;
+}
+
+/* ========== Sidebar ========== */
+.sidebar {
+  width: var(--layout-sidebar-width);
+  flex-shrink: 0;
+  background: var(--color-bg-container);
+  border-right: 1px solid var(--color-border-secondary);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 侧栏底部径向渐变光晕 */
+.sidebar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 200px;
+  background: var(--sidebar-glow);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.sidebar-logo {
+  height: var(--layout-header-height);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--color-border-secondary);
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.sidebar-logo-icon {
+  width: 32px; height: 32px;
+  flex-shrink: 0;
+}
+
+.sidebar-logo-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 8px;
+  overflow-y: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.nav-group-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-auxiliary);
+  padding: 16px 12px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: var(--radius-wrapper);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  gap: 10px;
+  transition: background 0.15s, color 0.15s;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.nav-item:hover {
+  background: var(--color-fill-hover);
+}
+
+.nav-item.active {
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+}
+
+.nav-item-icon {
+  width: 16px; height: 16px;
+  flex-shrink: 0;
+}
+
+/* ========== Main Content ========== */
+.main-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ========== Top Header ========== */
+.top-header {
+  height: var(--layout-header-height);
+  flex-shrink: 0;
+  background: var(--color-bg-container);
+  border-bottom: 1px solid var(--color-border-secondary);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--layout-gutter);
+  justify-content: space-between;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text-auxiliary);
+}
+
+.breadcrumb-sep {
+  color: var(--color-border-primary);
+}
+
+.breadcrumb-current {
+  color: var(--color-text-secondary);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-icon-btn {
+  width: 32px; height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-wrapper);
+  cursor: pointer;
+  color: var(--color-text-auxiliary);
+  transition: background 0.15s;
+}
+
+.header-icon-btn:hover {
+  background: var(--color-fill-hover);
+  color: var(--color-text-secondary);
+}
+
+/* ========== Content Area ========== */
+.content-area {
+  flex: 1;
+  padding: var(--layout-gutter);
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-gutter);
+  overflow-y: auto;
+  background: var(--color-bg-sunken);
+}
+
+/* ========== KPI Grid — 深色3列 ========== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--layout-gutter);
+  flex-shrink: 0;
+}
+
+.kpi-card {
+  height: 88px;
+  background: var(--color-bg-container);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-outer);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.kpi-card:hover {
+  border-color: rgba(60,126,255,0.3);
+  box-shadow: 0 2px 8px rgba(54,118,246,0.1);
+}
+
+.kpi-icon {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kpi-icon svg {
+  width: 24px; height: 24px;
+}
+
+.kpi-icon-blue {
+  background: rgba(54,118,246,0.15);
+  color: var(--color-accent);
+}
+
+.kpi-icon-red {
+  background: rgba(247,77,91,0.15);
+  color: var(--color-danger);
+}
+
+.kpi-icon-green {
+  background: rgba(40,198,77,0.15);
+  color: var(--color-success);
+}
+
+.kpi-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.kpi-label {
+  font-size: 12px;
+  color: var(--color-text-auxiliary);
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.kpi-value {
+  font-family: "DIN Alternate", "Helvetica Neue", sans-serif;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 32px;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-trend {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: -2px;
+}
+
+.kpi-trend-up {
+  color: var(--color-danger);
+}
+
+.kpi-trend-down {
+  color: var(--color-success);
+}
+
+/* ========== Table Section ========== */
+.table-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-container);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-outer);
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Section Header - Two Row Structure */
+.table-section-header {
+  flex-shrink: 0;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section-header-row1 {
+  display: flex;
+  align-items: center;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  line-height: 22px;
+}
+
+.section-header-row2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-header-row2 .btn-primary {
+  margin-right: auto;
+}
+
+.header-divider {
+  height: 1px;
+  background: var(--color-border-secondary);
+  margin: 0 16px;
+  flex-shrink: 0;
+}
+
+/* ========== Buttons ========== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  border-radius: var(--radius-wrapper);
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  white-space: nowrap;
+  gap: 4px;
+}
+
+.btn svg {
+  width: 14px; height: 14px;
+}
+
+.btn-sm {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+
+.btn-primary {
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+}
+
+.btn-primary:hover {
+  background: var(--color-accent-hover);
+}
+
+.btn-primary:active {
+  background: var(--color-accent-active);
+}
+
+.btn-outline {
+  background: var(--color-bg-container);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-primary);
+}
+
+.btn-outline:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* ========== Filter Controls ========== */
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.filter-select, .filter-input {
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-wrapper);
+  background: var(--color-bg-container);
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.filter-select {
+  padding-right: 24px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23A6ABB4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+.filter-select:focus, .filter-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-focus);
+}
+
+.filter-input {
+  width: 180px;
+  padding-left: 28px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23A6ABB4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 8px center;
+}
+
+.filter-input::placeholder {
+  color: var(--color-text-placeholder);
+}
+
+/* ========== Table ========== */
+.table-wrapper {
+  flex: 1;
+  overflow: auto;
+  padding: 0 16px;
+  min-height: 0;
+}
+
+.data-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.data-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.data-table th {
+  height: 40px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-auxiliary);
+  text-align: left;
+  background: var(--color-bg-container);
+  border-bottom: 1px solid var(--color-border-secondary);
+  white-space: nowrap;
+}
+
+.data-table td {
+  height: 44px;
+  padding: 0 12px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.data-table tbody tr {
+  transition: background 0.1s;
+}
+
+.data-table tbody tr:hover {
+  background: var(--color-fill-hover);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Column widths */
+.col-name { width: 22%; }
+.col-ip { width: 14%; }
+.col-threat { width: 10%; }
+.col-type { width: 10%; }
+.col-status { width: 10%; }
+.col-handler { width: 10%; }
+.col-time { width: 14%; }
+.col-action { width: 10%; }
+
+/* ========== Status Dot & Badge ========== */
+.status-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.status-dot-critical { background: var(--color-threat-critical); }
+.status-dot-high { background: var(--color-threat-high); }
+.status-dot-medium { background: var(--color-threat-medium); }
+.status-dot-low { background: var(--color-threat-low); }
+.status-dot-safe { background: var(--color-threat-safe); }
+.status-dot-unknown { background: var(--color-threat-unknown); }
+
+.status-dot-pending { background: var(--color-warning); }
+.status-dot-processing { background: var(--color-accent); }
+.status-dot-resolved { background: var(--color-success); }
+.status-dot-closed { background: var(--color-text-auxiliary); }
+
+/* Tag badge — 深色模式使用透明度更高的背景 */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-content);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1;
+  gap: 4px;
+}
+
+.badge-critical {
+  background: rgba(160,20,32,0.2);
+  color: #F74D5B;
+}
+
+.badge-high {
+  background: rgba(247,77,91,0.15);
+  color: var(--color-threat-high);
+}
+
+.badge-medium {
+  background: rgba(246,150,54,0.15);
+  color: var(--color-threat-medium);
+}
+
+.badge-low {
+  background: rgba(246,213,49,0.12);
+  color: var(--color-threat-low);
+}
+
+.badge-info {
+  background: rgba(54,118,246,0.15);
+  color: var(--color-accent);
+}
+
+/* Action link */
+.action-link {
+  color: var(--color-accent);
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.action-link:hover {
+  text-decoration: underline;
+}
+
+/* ========== Pagination ========== */
+.table-footer {
+  flex-shrink: 0;
+  border-top: 1px solid var(--color-border-secondary);
+  margin: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 8px 0;
+  gap: 4px;
+}
+
+.page-btn {
+  width: 32px; height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-wrapper);
+  background: var(--color-bg-container);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.page-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.page-btn.active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-accent-fg);
+}
+
+.page-btn.disabled {
+  color: var(--color-text-placeholder);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.page-info {
+  font-size: 12px;
+  color: var(--color-text-auxiliary);
+  margin-right: 8px;
+}
+
+.page-ellipsis {
+  width: 32px; height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--color-text-auxiliary);
+}
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+  <!-- ====== Sidebar ====== -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg class="sidebar-logo-icon" viewBox="0 0 32 32" fill="none">
+        <rect x="2" y="2" width="12" height="12" rx="1" fill="#3d53f7"/>
+        <rect x="18" y="2" width="12" height="12" rx="1" fill="#5fafff"/>
+        <rect x="2" y="18" width="12" height="12" rx="1" fill="#5fafff"/>
+        <rect x="18" y="18" width="12" height="12" rx="1" fill="#3d53f7"/>
+      </svg>
+      <span class="sidebar-logo-text">天眼态势感知</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group-title">监控中心</div>
+      <a class="nav-item active" href="#">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        安全概览
+      </a>
+      <a class="nav-item" href="#">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        告警管理
+      </a>
+      <a class="nav-item" href="#">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        威胁情报
+      </a>
+      <div class="nav-group-title">资产管理</div>
+      <a class="nav-item" href="#">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        资产清单
+      </a>
+      <a class="nav-item" href="#">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        扫描任务
+      </a>
+      <div class="nav-group-title">系统设置</div>
+      <a class="nav-item" href="#">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        用户管理
+      </a>
+    </nav>
+  </aside>
+
+  <!-- ====== Main ====== -->
+  <div class="main-content">
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="breadcrumb">
+        <span>监控中心</span>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">安全概览</span>
+      </div>
+      <div class="header-actions">
+        <div class="header-icon-btn" title="刷新">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        </div>
+        <div class="header-icon-btn" title="通知">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="content-area">
+
+      <!-- KPI Cards — 深色3列 + 56px图标 -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-label">安全事件总数</span>
+            <span class="kpi-value">2,847</span>
+            <span class="kpi-trend kpi-trend-up">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              +12.3%
+            </span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon-red">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-label">高危告警</span>
+            <span class="kpi-value">156</span>
+            <span class="kpi-trend kpi-trend-up">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              +8.7%
+            </span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="kpi-info">
+            <span class="kpi-label">已处置事件</span>
+            <span class="kpi-value">2,614</span>
+            <span class="kpi-trend kpi-trend-down">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+              处置率 91.8%
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Section -->
+      <div class="table-section">
+        <div class="table-section-header">
+          <div class="section-header-row1">
+            <span class="section-title">安全事件列表</span>
+          </div>
+          <div class="section-header-row2">
+            <button class="btn btn-sm btn-primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              创建任务
+            </button>
+            <div class="filter-group">
+              <select class="filter-select" style="width:100px">
+                <option>全部等级</option>
+                <option>严重</option>
+                <option>高危</option>
+                <option>中危</option>
+                <option>低危</option>
+              </select>
+              <select class="filter-select" style="width:100px">
+                <option>全部状态</option>
+                <option>待处理</option>
+                <option>处理中</option>
+                <option>已处置</option>
+                <option>已关闭</option>
+              </select>
+              <input class="filter-input" type="text" placeholder="搜索事件名称...">
+            </div>
+          </div>
+        </div>
+        <div class="header-divider"></div>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="col-name">事件名称</th>
+                <th class="col-ip">来源 IP</th>
+                <th class="col-ip">目标 IP</th>
+                <th class="col-threat">威胁等级</th>
+                <th class="col-type">攻击类型</th>
+                <th class="col-status">状态</th>
+                <th class="col-handler">处置人</th>
+                <th class="col-time">发现时间</th>
+                <th class="col-action">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>SQL 注入攻击尝试</td>
+                <td>192.168.1.45</td>
+                <td>10.0.0.12</td>
+                <td><span class="badge badge-critical"><span class="status-dot status-dot-critical"></span>严重</span></td>
+                <td>注入攻击</td>
+                <td><span class="status-dot status-dot-pending"></span>待处理</td>
+                <td>—</td>
+                <td>2026-05-08 17:32</td>
+                <td><a class="action-link">处置</a></td>
+              </tr>
+              <tr>
+                <td>恶意木马通信检测</td>
+                <td>203.156.78.9</td>
+                <td>10.0.2.88</td>
+                <td><span class="badge badge-high"><span class="status-dot status-dot-high"></span>高危</span></td>
+                <td>木马通信</td>
+                <td><span class="status-dot status-dot-processing"></span>处理中</td>
+                <td>张伟</td>
+                <td>2026-05-08 16:48</td>
+                <td><a class="action-link">详情</a></td>
+              </tr>
+              <tr>
+                <td>异常登录行为告警</td>
+                <td>172.16.5.201</td>
+                <td>10.0.1.55</td>
+                <td><span class="badge badge-high"><span class="status-dot status-dot-high"></span>高危</span></td>
+                <td>暴力破解</td>
+                <td><span class="status-dot status-dot-processing"></span>处理中</td>
+                <td>李明</td>
+                <td>2026-05-08 15:20</td>
+                <td><a class="action-link">详情</a></td>
+              </tr>
+              <tr>
+                <td>DDoS 流量异常波动</td>
+                <td>45.33.32.156</td>
+                <td>10.0.0.1</td>
+                <td><span class="badge badge-medium"><span class="status-dot status-dot-medium"></span>中危</span></td>
+                <td>拒绝服务</td>
+                <td><span class="status-dot status-dot-resolved"></span>已处置</td>
+                <td>王芳</td>
+                <td>2026-05-08 14:05</td>
+                <td><a class="action-link">详情</a></td>
+              </tr>
+              <tr>
+                <td>敏感数据外泄检测</td>
+                <td>10.0.3.102</td>
+                <td>185.220.101.34</td>
+                <td><span class="badge badge-critical"><span class="status-dot status-dot-critical"></span>严重</span></td>
+                <td>数据外泄</td>
+                <td><span class="status-dot status-dot-pending"></span>待处理</td>
+                <td>—</td>
+                <td>2026-05-08 13:17</td>
+                <td><a class="action-link">处置</a></td>
+              </tr>
+              <tr>
+                <td>Web Shell 上传检测</td>
+                <td>192.168.10.77</td>
+                <td>10.0.2.44</td>
+                <td><span class="badge badge-high"><span class="status-dot status-dot-high"></span>高危</span></td>
+                <td>后门植入</td>
+                <td><span class="status-dot status-dot-resolved"></span>已处置</td>
+                <td>赵强</td>
+                <td>2026-05-08 11:42</td>
+                <td><a class="action-link">详情</a></td>
+              </tr>
+              <tr>
+                <td>端口扫描行为告警</td>
+                <td>198.51.100.23</td>
+                <td>10.0.1.100</td>
+                <td><span class="badge badge-low"><span class="status-dot status-dot-low"></span>低危</span></td>
+                <td>信息探测</td>
+                <td><span class="status-dot status-dot-closed"></span>已关闭</td>
+                <td>陈静</td>
+                <td>2026-05-08 10:33</td>
+                <td><a class="action-link">详情</a></td>
+              </tr>
+              <tr>
+                <td>XSS 跨站脚本攻击</td>
+                <td>172.16.8.55</td>
+                <td>10.0.0.88</td>
+                <td><span class="badge badge-medium"><span class="status-dot status-dot-medium"></span>中危</span></td>
+                <td>脚本注入</td>
+                <td><span class="status-dot status-dot-resolved"></span>已处置</td>
+                <td>张伟</td>
+                <td>2026-05-08 09:15</td>
+                <td><a class="action-link">详情</a></td>
+              </tr>
+              <tr>
+                <td>异常 DNS 隧道通信</td>
+                <td>10.0.5.200</td>
+                <td>8.8.4.4</td>
+                <td><span class="badge badge-medium"><span class="status-dot status-dot-medium"></span>中危</span></td>
+                <td>隧道通信</td>
+                <td><span class="status-dot status-dot-processing"></span>处理中</td>
+                <td>李明</td>
+                <td>2026-05-08 08:47</td>
+                <td><a class="action-link">详情</a></td>
+              </tr>
+              <tr>
+                <td>弱口令检测告警</td>
+                <td>192.168.1.100</td>
+                <td>10.0.3.15</td>
+                <td><span class="badge badge-low"><span class="status-dot status-dot-low"></span>低危</span></td>
+                <td>弱口令</td>
+                <td><span class="status-dot status-dot-closed"></span>已关闭</td>
+                <td>王芳</td>
+                <td>2026-05-07 22:10</td>
+                <td><a class="action-link">详情</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="table-footer">
+          <span class="page-info">共 2,847 条</span>
+          <button class="page-btn disabled">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <span class="page-ellipsis">…</span>
+          <button class="page-btn">285</button>
+          <button class="page-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

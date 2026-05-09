@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RingCarousel 组件演示</title>
+
+<!-- 引入组件样式 -->
+<link rel="stylesheet" href="ring-carousel.css">
+
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #ffffff;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  /* 容器必须设置明确的宽高 */
+  #carousel-container {
+    width: 100vw;
+    height: 100vh;
+  }
+</style>
+</head>
+<body>
+
+<!-- 1. 准备一个容器 -->
+<div id="carousel-container"></div>
+
+<!-- 2. 引入 GSAP 依赖（组件前置依赖） -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Observer.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Draggable.min.js"></script>
+
+<!-- 3. 引入组件 -->
+<script src="ring-carousel.js"></script>
+
+<!-- 4. 初始化组件 -->
+<script>
+  // 准备卡片数据
+  var cardData = [
+    { title: 'Dashboard Discovery', image: 'https://picsum.photos/seed/dash-01/240/320', desc: '一站式安全态势感知仪表盘，通过可视化图表实时展示全网威胁情报、漏洞分布和攻击趋势，帮助安全团队快速定位风险并做出决策。' },
+    { title: 'Design System', image: 'https://picsum.photos/seed/design-02/240/320', desc: '企业级设计系统，涵盖色彩规范、字体层级、组件库和交互模式，确保产品间视觉一致性与开发效率，服务于50+内部产品线。' },
+    { title: 'New Style Guide', image: 'https://picsum.photos/seed/style-03/240/320', desc: '新一代品牌风格指南，融合极简主义与科技感，定义了全新的圆角、阴影和动效规范，推动品牌视觉升级。' },
+    { title: 'AI Guidline', image: 'https://picsum.photos/seed/ai-04/240/320', desc: 'AI产品设计准则，规范了人工智能场景下的交互模式、透明度要求和信任构建策略，确保AI产品的可靠性和用户体验。' },
+    { title: 'Motion Design', image: 'https://picsum.photos/seed/motion-05/240/320', desc: '动效设计体系，定义了过渡动画、微交互和反馈动效的时间曲线与编排规则，赋予产品流畅自然的操作体验。' },
+    { title: 'Brand Design', image: 'https://picsum.photos/seed/brand-06/240/320', desc: '品牌视觉体系设计，从Logo延展到完整的应用场景，包括名片、信纸、展板和数字媒体模板，统一品牌对外形象。' },
+    { title: 'Experience Design', image: 'https://picsum.photos/seed/exp-07/240/320', desc: '全链路用户体验设计，覆盖用户研究、信息架构、交互原型和可用性测试，以用户为中心驱动产品迭代优化。' },
+    { title: 'Security Platform', image: 'https://picsum.photos/seed/sec-08/240/320', desc: '综合安全运营平台，整合SIEM、SOAR和威胁狩猎能力，提供从检测到响应的自动化安全运营工作流。' },
+    { title: 'Threat Intel', image: 'https://picsum.photos/seed/threat-09/240/320', desc: '威胁情报平台，汇聚多源情报数据，通过关联分析和自动化指标提取，为安全运营提供可操作的威胁洞察。' },
+    { title: 'Cloud Mesh', image: 'https://picsum.photos/seed/cloud-10/240/320', desc: '云安全网格架构，基于零信任原则设计微隔离策略，实现多云环境下的细粒度访问控制和流量可视化。' },
+    { title: 'Zero Trust', image: 'https://picsum.photos/seed/zero-11/240/320', desc: '零信任架构落地方案，重新定义身份验证、设备信任和最小权限原则，构建不依赖网络边界的可信访问体系。' },
+    { title: 'SOC Center', image: 'https://picsum.photos/seed/soc-12/240/320', desc: '安全运营中心大屏设计，实时展示告警分布、处置进度和威胁态势，支撑7×24小时安全值守与事件响应。' },
+    { title: 'Data Analytics', image: 'https://picsum.photos/seed/data-13/240/320', desc: '安全数据分析平台，基于大数据引擎提供日志检索、异常检测和趋势预测，将海量数据转化为安全决策依据。' },
+    { title: 'Network Graph', image: 'https://picsum.photos/seed/net-14/240/320', desc: '网络拓扑图谱可视化，通过力导向图和层次布局展示资产关联、攻击路径和风险传播链，辅助威胁分析。' },
+    { title: 'Endpoint Sec', image: 'https://picsum.photos/seed/endpt-15/240/320', desc: '终端安全防护方案，集成EDR、反病毒和主机入侵检测能力，提供全生命周期的终端威胁防护与响应。' },
+    { title: 'Vuln Scanner', image: 'https://picsum.photos/seed/vuln-16/240/320', desc: '漏洞扫描管理系统，支持资产发现、漏洞检测、风险评估和修复追踪，帮助组织持续掌握漏洞态势。' },
+    { title: 'Incident Resp', image: 'https://picsum.photos/seed/incident-17/240/320', desc: '安全事件响应平台，提供标准化响应流程、自动化剧本和协作工具，将事件平均响应时间缩短60%。' },
+    { title: 'Compliance', image: 'https://picsum.photos/seed/comp-18/240/320', desc: '合规管理平台，内置等保2.0、GDPR等合规模板，自动化检查与证据收集，降低合规审计成本。' },
+    { title: 'Identity Mgmt', image: 'https://picsum.photos/seed/id-19/240/320', desc: '统一身份管理平台，整合SSO、MFA和权限治理，实现人员全生命周期的身份管理与访问控制。' },
+    { title: 'API Gateway', image: 'https://picsum.photos/seed/api-20/240/320', desc: 'API安全网关，提供流量管控、认证鉴权、请求校验和威胁防护，保障API接口的安全性与可用性。' },
+    { title: 'Threat Map', image: 'https://picsum.photos/seed/map-21/240/320', desc: '全球威胁态势地图，实时可视化展示攻击来源、传播路径和影响范围，提供直观的安全态势感知。' },
+    { title: 'Log Analyzer', image: 'https://picsum.photos/seed/log-22/240/320', desc: '智能日志分析引擎，基于机器学习实现异常日志识别、根因分析和自动分类，提升运维效率。' },
+    { title: 'Risk Scoring', image: 'https://picsum.photos/seed/risk-23/240/320', desc: '风险量化评分系统，综合资产价值、威胁概率和脆弱性计算风险分值，支撑风险优先级排序和决策。' },
+    { title: 'Asset Inventory', image: 'https://picsum.photos/seed/asset-24/240/320', desc: '资产清点管理系统，自动发现和分类网络资产，建立完整的资产台账，为安全管理提供基础数据支撑。' },
+    { title: 'Policy Engine', image: 'https://picsum.photos/seed/policy-25/240/320', desc: '安全策略引擎，统一管理和下发访问控制、审计和防护策略，确保安全规则在全网一致执行。' },
+    { title: 'Alert Center', image: 'https://picsum.photos/seed/alert-26/240/320', desc: '告警中心设计，通过智能聚合、降噪和优先级排序，将海量告警转化为可操作的安全事件。' },
+    { title: 'Forensics', image: 'https://picsum.photos/seed/forensic-27/240/320', desc: '电子取证分析平台，提供磁盘取证、内存分析和网络取证能力，帮助追踪攻击者行为链和证据保全。' },
+    { title: 'Sandbox', image: 'https://picsum.photos/seed/sandbox-28/240/320', desc: '恶意文件沙箱分析系统，在隔离环境中动态执行可疑文件，通过行为监控识别零日威胁和高级恶意软件。' },
+    { title: 'Deception Grid', image: 'https://picsum.photos/seed/decept-29/240/320', desc: '欺骗防御网络，部署高仿真蜜罐和诱饵资产，诱导攻击者进入陷阱，实现早期威胁检测与攻击者画像。' },
+    { title: 'Threat Feed', image: 'https://picsum.photos/seed/feed-30/240/320', desc: '威胁情报订阅源管理，整合STIX/TAXII标准格式情报，实现指标自动导入、关联匹配和告警触发。' },
+    { title: 'Encrypt Vault', image: 'https://picsum.photos/seed/encrypt-31/240/320', desc: '密钥保险库系统，提供密钥生成、存储、轮换和销毁的全生命周期管理，确保加密资产安全可控。' },
+    { title: 'Access Control', image: 'https://picsum.photos/seed/access-32/240/320', desc: '精细化访问控制系统，基于RBAC和ABAC混合模型，实现动态权限决策和最小权限原则的落地执行。' },
+    { title: 'Audit Trail', image: 'https://picsum.photos/seed/audit-33/240/320', desc: '审计轨迹追踪系统，全量记录用户操作、权限变更和数据访问行为，满足合规审计和事件溯源需求。' },
+    { title: 'ML Detector', image: 'https://picsum.photos/seed/ml-34/240/320', desc: '机器学习威胁检测引擎，通过异常检测模型和深度学习算法，识别传统规则无法覆盖的高级持续性威胁。' },
+    { title: 'Response Play', image: 'https://picsum.photos/seed/play-35/240/320', desc: '自动化响应剧本平台，预置100+常见场景的处置流程，支持一键启动和并行编排，加速事件闭环。' },
+    { title: 'Topology View', image: 'https://picsum.photos/seed/topo-36/240/320', desc: '网络拓扑可视化视图，自动绘制资产连接关系和流量路径，快速定位异常节点和网络瓶颈。' },
+    { title: 'DNS Monitor', image: 'https://picsum.photos/seed/dns-37/240/320', desc: 'DNS安全监控系统，检测DGA域名、DNS隧道和异常解析行为，阻断基于DNS协议的数据窃取和C2通信。' },
+    { title: 'Firewall Rule', image: 'https://picsum.photos/seed/fw-38/240/320', desc: '防火墙策略优化平台，分析规则冲突、冗余和阴影，推荐最优策略集，提升防护效果和管理效率。' },
+    { title: 'Proxy Layer', image: 'https://picsum.photos/seed/proxy-39/240/320', desc: '安全代理层，提供流量审计、内容过滤和SSL解密能力，作为安全检测链路的关键一环。' },
+    { title: 'Session Mgmt', image: 'https://picsum.photos/seed/session-40/240/320', desc: '会话安全管理系统，监控异常登录、并发会话和凭证滥用，防止会话劫持和横向移动攻击。' },
+  ];
+
+  // 创建组件实例
+  var carousel = new RingCarousel('#carousel-container', {
+    data: cardData,
+    radius: 445,
+    speed: 0.40,
+    tilt: 22,
+    cardRotate: 90,
+    autoSpeed: 0.08,
+    cardWidth: 120,
+    cardHeight: 160,
+    accent: '#4a90d9',
+  });
+
+  console.log('%c◯ RingCarousel 组件已初始化', 'color: #4a90d9; font-weight: bold;');
+  console.log('可用方法：carousel.next() / .prev() / .openDetail(idx) / .closeDetail() / .destroy()');
+</script>
+
+</body>
+</html>

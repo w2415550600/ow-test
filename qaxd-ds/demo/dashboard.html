@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>安全态势感知 - 运营仪表盘</title>
+  <style>
+    /* ================================================================
+       QAX Design System — Light Administration Dashboard
+       All tokens sourced from DESIGN.md / _colors.scss / _spacing.scss
+       Responsive: 100vw × 100vh, fluid layout
+       ================================================================ */
+
+    :root {
+      --color-accent: #105CF4;
+      --color-accent-hover: #3A79F6;
+      --color-accent-active: #0A4ACA;
+      --color-accent-focus: #6495F8;
+      --color-accent-fill: #E8F0FF;
+      --color-accent-fill-hover: #BBD1FD;
+      --color-accent-foreground: #FFFFFF;
+      --color-success: #00B82B;
+      --color-success-fill: #E8FFED;
+      --color-warning: #F48210;
+      --color-warning-fill: #FFF4E8;
+      --color-danger: #F42738;
+      --color-danger-fill: #FFE8EA;
+      --color-info: #1082F4;
+      --color-info-fill: #E8F4FF;
+      --color-threat-critical: #A00D19;
+      --color-threat-high: #F42738;
+      --color-threat-medium: #F48210;
+      --color-threat-low: #F4CB00;
+      --color-threat-security: #00B82B;
+      --color-threat-unknown: #A8ADB6;
+      --color-text-primary: #1E2127;
+      --color-text-secondary: #292D35;
+      --color-text-tertiary: #6D7585;
+      --color-text-quaternary: rgba(168, 173, 182, 0.65);
+      --color-border-primary: #C8CBD1;
+      --color-border-secondary: #ECEDEF;
+      --color-fill-hover: #ECEDEF;
+      --color-fill-active: #E8F0FF;
+      --color-background: #FFFFFF;
+      --color-background-sunken: #F3F3F4;
+      --color-background-elevated: #FFFFFF;
+      --color-background-overlay: #FFFFFF;
+      --color-background-accent: #F8F8F9;
+      --layout-header-height: 56px;
+      --layout-sidebar-width: 216px;
+      --layout-gutter: 16px;
+      --spacing-compact: 4px;
+      --spacing-standard: 8px;
+      --spacing-loose: 16px;
+      --spacing-wide: 24px;
+      --spacing-vast: 32px;
+      --radius-content: 2px;
+      --radius-wrapper: 4px;
+      --radius-container: 6px;
+      --radius-outer: 8px;
+      --shadow-l1: 0 1px 2px 0 rgba(30, 33, 39, 0.1);
+      --shadow-l2: 0 4px 8px 0 rgba(30, 33, 39, 0.1);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+      background: var(--color-background-sunken);
+      color: var(--color-text-primary);
+      width: 100vw;
+      height: 100vh;
+      min-width: 1024px;
+      overflow: hidden;
+      display: flex;
+      font-size: 12px;
+      line-height: 20px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ================================================================
+       SIDEBAR — fixed width, full height
+       ================================================================ */
+    .sidebar {
+      width: var(--layout-sidebar-width);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 0 var(--spacing-standard) var(--spacing-standard) var(--spacing-standard);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+      background: var(--color-background);
+      border-right: 1px solid var(--color-border-secondary);
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-standard);
+      height: var(--layout-header-height);
+      padding: 0 15px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-logo { width: 32px; height: 32px; flex-shrink: 0; }
+
+    .sidebar-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      white-space: nowrap;
+    }
+
+    .nav-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      overflow-y: auto;
+    }
+
+    .nav-group-title {
+      font-size: 12px;
+      color: var(--color-text-tertiary);
+      padding: var(--spacing-wide) var(--spacing-wide) var(--spacing-standard) var(--spacing-wide);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      height: 40px;
+      padding: 0 var(--spacing-wide);
+      gap: var(--spacing-standard);
+      cursor: pointer;
+      border-radius: var(--radius-wrapper);
+      transition: background 0.2s, color 0.2s;
+      color: var(--color-text-secondary);
+      font-size: 14px;
+    }
+
+    .nav-item:hover { background: var(--color-fill-hover); }
+    .nav-item.active { background: var(--color-accent); color: var(--color-accent-foreground); }
+
+    .nav-item-icon {
+      width: 16px; height: 16px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .nav-item-icon svg { width: 14px; height: 14px; }
+
+    .nav-item:not(.active) .nav-item-icon svg {
+      fill: var(--color-text-tertiary);
+      stroke: var(--color-text-tertiary);
+    }
+
+    .nav-item.active .nav-item-icon svg {
+      fill: var(--color-accent-foreground);
+      stroke: var(--color-accent-foreground);
+    }
+
+    .nav-item-text { flex: 1; white-space: nowrap; }
+
+    .nav-collapse {
+      position: absolute;
+      bottom: var(--spacing-standard);
+      right: var(--spacing-standard);
+      width: 16px; height: 16px;
+      cursor: pointer;
+      opacity: 0.5;
+    }
+
+    /* ================================================================
+       MAIN CONTENT — fluid, 16px gutter on all sides
+       ================================================================ */
+    .main {
+      flex: 1;
+      height: 100vh;
+      padding: var(--layout-gutter);
+      display: flex;
+      flex-direction: column;
+      gap: var(--layout-gutter);
+      overflow-y: auto;
+      overflow-x: hidden;
+      min-width: 0;
+    }
+
+    /* --- Top Bar --- */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      height: 24px;
+      gap: var(--spacing-standard);
+      flex-shrink: 0;
+    }
+
+    .breadcrumb {
+      font-size: 14px;
+      color: var(--color-text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-standard);
+    }
+
+    .breadcrumb svg { width: 14px; height: 14px; }
+    .breadcrumb .current { color: var(--color-text-secondary); }
+
+    .top-bar-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-standard);
+      font-size: 14px;
+      color: var(--color-text-secondary);
+    }
+
+    .top-bar-right svg { width: 16px; height: 16px; }
+
+    /* ================================================================
+       KPI CARDS — fluid 4-column
+       ================================================================ */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--layout-gutter);
+      flex-shrink: 0;
+    }
+
+    .kpi-card {
+      height: 88px;
+      background: var(--color-background);
+      border: 1px solid var(--color-border-secondary);
+      border-radius: var(--radius-outer);
+      display: flex;
+      align-items: center;
+      padding: var(--spacing-loose) var(--spacing-vast);
+      gap: var(--spacing-loose);
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-l1);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .kpi-card:hover {
+      border-color: rgba(16, 92, 244, 0.3);
+      box-shadow: var(--shadow-l2), 0 0 0 1px rgba(16, 92, 244, 0.08);
+    }
+
+    .kpi-info {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-standard);
+      min-width: 0;
+    }
+
+    .kpi-label { font-size: 14px; color: var(--color-text-tertiary); white-space: nowrap; }
+
+    .kpi-value-row {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-standard);
+    }
+
+    .kpi-value {
+      font-family: "DIN Alternate", "Helvetica Neue", sans-serif;
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--color-text-primary);
+    }
+
+    .kpi-trend {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .kpi-trend.up { color: var(--color-danger); }
+    .kpi-trend.down { color: var(--color-success); }
+
+    .kpi-icon {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .kpi-icon svg { width: 24px; height: 24px; }
+
+    .kpi-icon.blue { background: var(--color-accent); }
+    .kpi-icon.blue svg { fill: none; stroke: #FFFFFF; }
+    .kpi-icon.red { background: var(--color-danger); }
+    .kpi-icon.red svg { fill: none; stroke: #FFFFFF; }
+    .kpi-icon.teal { background: #16b9b7; }
+    .kpi-icon.teal svg { fill: none; stroke: #FFFFFF; }
+    .kpi-icon.purple { background: #6d2cf1; }
+    .kpi-icon.purple svg { fill: none; stroke: #FFFFFF; }
+
+    /* ================================================================
+       TABLE SECTION — fills remaining space, 16px inner padding
+       ================================================================ */
+    .table-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: var(--color-background);
+      border: 1px solid var(--color-border-secondary);
+      border-radius: var(--radius-outer);
+      overflow: hidden;
+      box-shadow: var(--shadow-l1);
+    }
+
+    /* --- Table Header: title on top, button + filters on same row below --- */
+    .table-header-row {
+      display: flex;
+      flex-direction: column;
+      padding: var(--spacing-loose);
+      border-bottom: none;
+      flex-shrink: 0;
+      gap: var(--spacing-loose);
+      position: relative;
+    }
+
+    .table-header-row::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: var(--spacing-loose);
+      right: var(--spacing-loose);
+      height: 1px;
+      background: var(--color-border-secondary);
+    }
+
+    .table-header-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-text-secondary);
+      line-height: 20px;
+    }
+
+    .table-header-toolbar {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-loose);
+      flex-wrap: wrap;
+    }
+
+    .table-header-left {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-loose);
+    }
+
+    .table-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-standard);
+      padding: 0 var(--spacing-loose);
+      height: 32px;
+      background: var(--color-accent);
+      border: 1px solid var(--color-accent);
+      border-radius: var(--radius-wrapper);
+      color: var(--color-accent-foreground);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+      font-weight: 500;
+    }
+
+    .table-action-btn:hover {
+      background: var(--color-accent-hover);
+      border-color: var(--color-accent-hover);
+    }
+
+    .table-action-btn svg { width: 14px; height: 14px; }
+
+    .table-header-right {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-loose);
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    .filter-select,
+    .filter-input {
+      height: 32px;
+      padding: 0 var(--spacing-loose);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--radius-wrapper);
+      font-size: 12px;
+      color: var(--color-text-primary);
+      background: var(--color-background);
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .filter-select { min-width: 120px; cursor: pointer; appearance: none; -webkit-appearance: none; padding-right: var(--spacing-vast); background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%236D7585' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
+    .filter-input { min-width: 200px; }
+    .filter-select:focus, .filter-input:focus { border-color: var(--color-accent); }
+
+    .filter-input::placeholder { color: var(--color-text-quaternary); }
+
+    /* --- Table --- */
+    .table-wrapper {
+      flex: 1;
+      overflow: auto;
+      min-height: 0;
+      padding: 0 var(--spacing-loose);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+
+    .data-table thead th {
+      height: 40px;
+      padding: 0 var(--spacing-loose);
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      border-right: 1px solid var(--color-border-secondary);
+      white-space: nowrap;
+      background: var(--color-background-sunken);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .data-table thead th:last-child { border-right: none; }
+
+    .th-sort {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-compact);
+      cursor: pointer;
+    }
+
+    .th-sort svg { width: 14px; height: 14px; opacity: 0.5; }
+
+    .data-table tbody tr {
+      border-bottom: 1px solid var(--color-border-secondary);
+      transition: background 0.15s;
+    }
+
+    .data-table tbody tr:hover { background: #F8F9FA; }
+
+    .data-table tbody td {
+      height: 48px;
+      padding: 0 var(--spacing-loose);
+      font-size: 12px;
+      color: var(--color-text-primary);
+      white-space: nowrap;
+    }
+
+    /* --- Status Dot & Badge --- */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-compact);
+      font-size: 12px;
+    }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .status-dot.critical { background: var(--color-threat-critical); }
+    .status-dot.high { background: var(--color-threat-high); }
+    .status-dot.medium { background: var(--color-threat-medium); }
+    .status-dot.low { background: var(--color-threat-low); }
+    .status-dot.security { background: var(--color-threat-security); }
+    .status-dot.unknown { background: var(--color-threat-unknown); }
+    .status-dot.running { background: var(--color-accent); }
+    .status-dot.done { background: var(--color-success); }
+    .status-dot.pending { background: var(--color-warning); }
+    .status-dot.failed { background: var(--color-danger); }
+
+    /* --- Tag / Badge --- */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px var(--spacing-standard);
+      border-radius: var(--radius-wrapper);
+      font-size: 12px;
+      gap: var(--spacing-compact);
+      font-weight: 500;
+    }
+
+    .tag.critical { color: var(--color-threat-critical); background: var(--color-danger-fill); }
+    .tag.high { color: var(--color-threat-high); background: var(--color-danger-fill); }
+    .tag.medium { color: var(--color-threat-medium); background: var(--color-warning-fill); }
+    .tag.low { color: #9A7B00; background: #FFF8E1; }
+    .tag.info { color: var(--color-info); background: var(--color-info-fill); }
+    .tag.success { color: var(--color-success); background: var(--color-success-fill); }
+    .tag.neutral { color: var(--color-text-secondary); background: var(--color-background-sunken); }
+
+    /* --- Progress Bar --- */
+    .progress-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-compact);
+    }
+
+    .progress-track {
+      width: 72px; height: 6px;
+      background: var(--color-border-secondary);
+      border-radius: var(--radius-content);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--color-accent);
+      border-radius: var(--radius-content);
+      transition: width 0.3s;
+    }
+
+    .progress-fill.success { background: var(--color-success); }
+    .progress-fill.warning { background: var(--color-warning); }
+    .progress-fill.danger { background: var(--color-danger); }
+
+    .progress-text { font-size: 12px; color: var(--color-text-secondary); }
+
+    /* --- Action Link --- */
+    .action-link {
+      color: var(--color-accent);
+      font-size: 12px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .action-link:hover { opacity: 0.8; }
+
+    /* --- Pagination --- */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0;
+      padding: var(--spacing-standard) var(--spacing-loose);
+      flex-shrink: 0;
+      border-top: 1px solid var(--color-border-secondary);
+    }
+
+    .page-btn {
+      min-width: 32px; height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--color-border-secondary);
+      border-radius: var(--radius-wrapper);
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      margin: 0 2px;
+      background: var(--color-background);
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .page-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+
+    .page-btn.active {
+      background: var(--color-accent);
+      border-color: var(--color-accent);
+      color: #fff;
+    }
+
+    .page-btn.disabled { opacity: 0.3; pointer-events: none; }
+
+    .page-ellipsis {
+      display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px;
+      font-size: 12px; color: var(--color-text-tertiary);
+    }
+
+    .page-goto {
+      display: flex; align-items: center; gap: var(--spacing-compact);
+      margin-left: var(--spacing-standard);
+      font-size: 12px; color: var(--color-text-secondary);
+    }
+
+    .page-goto input {
+      width: 32px; height: 32px;
+      background: var(--color-background);
+      border: 1px solid var(--color-border-secondary);
+      border-radius: var(--radius-wrapper);
+      color: var(--color-text-secondary);
+      text-align: center;
+      font-size: 12px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .page-goto input:focus { border-color: var(--color-accent); }
+
+    /* ================================================================
+       RESPONSIVE — KPI grid adapts, sidebar collapses
+       ================================================================ */
+    @media (max-width: 1366px) {
+      .kpi-row { grid-template-columns: repeat(4, 1fr); }
+      .kpi-card { padding: var(--spacing-loose) var(--spacing-loose); }
+      .filter-input { min-width: 160px; }
+    }
+
+    @media (max-width: 1280px) {
+      .sidebar { width: 64px; }
+      .sidebar-title, .nav-item-text, .nav-group-title { display: none; }
+      .nav-item { justify-content: center; padding: 0; }
+      .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ====== SIDEBAR ====== -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <svg class="sidebar-logo" viewBox="0 0 32 32" width="32" height="32">
+        <path d="M17 2L29 2L29 12.5" fill="#5fafff" opacity="0.9"/>
+        <path d="M4 2L16 2L16 16" fill="#3d53f7"/>
+        <path d="M4 19.5L16 19.5L16 30" fill="#5fafff" opacity="0.9"/>
+        <path d="M17 16L29 16L29 30" fill="#3d53f7"/>
+      </svg>
+      <span class="sidebar-title">安全态势感知</span>
+    </div>
+
+    <div class="nav-list">
+      <div class="nav-group-title">监控中心</div>
+      <div class="nav-item active">
+        <div class="nav-item-icon">
+          <svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        </div>
+        <span class="nav-item-text">运营仪表盘</span>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-icon">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8.5L10.5 10"/></svg>
+        </div>
+        <span class="nav-item-text">实时告警</span>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-icon">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8l2 2 4-4" stroke-width="1.5"/></svg>
+        </div>
+        <span class="nav-item-text">威胁研判</span>
+      </div>
+
+      <div class="nav-group-title">资产管理</div>
+      <div class="nav-item">
+        <div class="nav-item-icon">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="1" width="12" height="14" rx="2"/><rect x="3" y="3" width="8" height="5" rx="1" stroke-width="0.8"/><circle cx="5" cy="10" r="1.5" stroke-width="0.8"/></svg>
+        </div>
+        <span class="nav-item-text">主机资产</span>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-icon">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 1h6l5 5v7a2 2 0 01-2 2H4a2 2 0 01-2-2V3a2 2 0 012-2z"/></svg>
+        </div>
+        <span class="nav-item-text">应用资产</span>
+      </div>
+
+      <div class="nav-group-title">巡检任务</div>
+      <div class="nav-item">
+        <div class="nav-item-icon">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="1" width="5.5" height="5.5" rx="1"/><rect x="9.5" y="1" width="5.5" height="5.5" rx="1"/><rect x="1" y="7.5" width="14" height="7.5" rx="1"/></svg>
+        </div>
+        <span class="nav-item-text">联合巡检</span>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-icon">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="2" width="14" height="4" rx="1"/><rect x="1" y="6.5" width="14" height="4" rx="1"/><rect x="1" y="11" width="14" height="4" rx="1"/></svg>
+        </div>
+        <span class="nav-item-text">巡检模版</span>
+      </div>
+
+      <div class="nav-group-title">系统配置</div>
+      <div class="nav-item">
+        <div class="nav-item-icon">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1"><circle cx="8" cy="8" r="3" stroke-width="1.2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>
+        </div>
+        <span class="nav-item-text">平台设置</span>
+      </div>
+    </div>
+
+    <div class="nav-collapse">
+      <svg viewBox="0 0 16 16" fill="none" stroke="#6D7585" stroke-width="1.5"><path d="M10 3L5 8L10 13"/></svg>
+    </div>
+  </nav>
+
+  <!-- ====== MAIN ====== -->
+  <main class="main">
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <div class="breadcrumb">
+        <svg viewBox="0 0 16 16" fill="#6D7585"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        <span>监控中心</span>
+        <span style="color: var(--color-border-primary);">/</span>
+        <span class="current">运营仪表盘</span>
+      </div>
+      <div class="top-bar-right">
+        admin
+        <svg viewBox="0 0 12 8" fill="none" stroke="#6D7585" stroke-width="1.5"><path d="M1 1.5L6 6.5L11 1.5"/></svg>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <span class="kpi-label">主机总数</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value">21,416</span>
+            <span class="kpi-trend up">↑ 3.2%</span>
+          </div>
+        </div>
+        <div class="kpi-icon blue">
+          <svg viewBox="0 0 24 24" stroke-width="1.5"><rect x="3" y="3" width="18" height="14" rx="2"/><rect x="6" y="6" width="8" height="2" rx="0.5" fill="currentColor" stroke="none"/><circle cx="7" cy="13" r="1.2" fill="currentColor" stroke="none"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <span class="kpi-label">待处置告警</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value">1,284</span>
+            <span class="kpi-trend up">↑ 12%</span>
+          </div>
+        </div>
+        <div class="kpi-icon red">
+          <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M12 2L13.5 8.5L20 8.5L14.75 12.5L16.75 19L12 15.25L7.25 19L9.25 12.5L4 8.5L10.5 8.5Z"/></svg>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <span class="kpi-label">巡检任务</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value">47</span>
+            <span class="kpi-trend down">↓ 5%</span>
+          </div>
+        </div>
+        <div class="kpi-icon teal">
+          <svg viewBox="0 0 24 24" stroke-width="1.5"><rect x="2" y="2" width="8" height="10" rx="1.5"/><rect x="2" y="14" width="8" height="8" rx="1.5" opacity="0.6"/><rect x="12" y="2" width="8" height="6" rx="1.5" opacity="0.6"/><rect x="12" y="10" width="8" height="12" rx="1.5"/></svg>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <span class="kpi-label">安全评分</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value" style="color: var(--color-success);">92</span>
+            <span class="tag success">优秀</span>
+          </div>
+        </div>
+        <div class="kpi-icon purple">
+          <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M12 2L15.5 8.5L22 9.5L17 14.5L18 21L12 18L6 21L7 14.5L2 9.5L8.5 8.5Z"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="table-section">
+      <!-- Header: Title on top → Button left + Filters right on same row -->
+      <div class="table-header-row">
+        <span class="table-header-title">最近安全告警</span>
+        <div class="table-header-toolbar">
+          <div class="table-header-left">
+            <button class="table-action-btn">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 3v10M3 8h10"/></svg>
+              创建巡检任务
+            </button>
+          </div>
+          <div class="table-header-right">
+            <select class="filter-select">
+              <option>全部等级</option>
+              <option>严重</option>
+              <option>高危</option>
+              <option>中危</option>
+              <option>低危</option>
+            </select>
+            <select class="filter-select">
+              <option>全部状态</option>
+              <option>待处置</option>
+              <option>处置中</option>
+              <option>已处置</option>
+              <option>处置失败</option>
+            </select>
+            <input class="filter-input" type="text" placeholder="搜索告警名称 / 资产…">
+          </div>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:80px">告警ID</th>
+              <th style="width:100px"><span class="th-sort">威胁等级 <svg viewBox="0 0 14 14"><path d="M4 5l3-3 3 3" fill="#6D7585"/><path d="M4 9l3 3 3-3" fill="#6D7585"/></svg></span></th>
+              <th>告警名称</th>
+              <th style="width:160px">受影响资产</th>
+              <th style="width:96px">资产类型</th>
+              <th style="width:160px"><span class="th-sort">检出时间 <svg viewBox="0 0 14 14"><path d="M4 5l3-3 3 3" fill="#6D7585"/><path d="M4 9l3 3 3-3" fill="#6D7585"/></svg></span></th>
+              <th style="width:96px">处置状态</th>
+              <th style="width:110px">进度</th>
+              <th style="width:72px">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="color: var(--color-text-tertiary);">#10402</td>
+              <td><span class="tag critical"><span class="status-dot critical" style="width:6px;height:6px;"></span> 严重</span></td>
+              <td>外部资产发现疑似勒索软件活动</td>
+              <td>App-Prod-Server-01</td>
+              <td><span class="tag neutral">主机</span></td>
+              <td>2026-05-06 09:22:10</td>
+              <td><span class="status-badge"><span class="status-dot pending"></span> 待处置</span></td>
+              <td><div class="progress-bar"><div class="progress-track"><div class="progress-fill danger" style="width:15%"></div></div><span class="progress-text">15%</span></div></td>
+              <td><a class="action-link">详情</a></td>
+            </tr>
+            <tr>
+              <td style="color: var(--color-text-tertiary);">#10401</td>
+              <td><span class="tag high"><span class="status-dot high" style="width:6px;height:6px;"></span> 高危</span></td>
+              <td>检测到针对 8080 端口的目录穿越攻击</td>
+              <td>Web-Gateway-FW-02</td>
+              <td><span class="tag neutral">应用</span></td>
+              <td>2026-05-06 08:45:05</td>
+              <td><span class="status-badge"><span class="status-dot running"></span> 处置中</span></td>
+              <td><div class="progress-bar"><div class="progress-track"><div class="progress-fill" style="width:55%"></div></div><span class="progress-text">55%</span></div></td>
+              <td><a class="action-link">详情</a></td>
+            </tr>
+            <tr>
+              <td style="color: var(--color-text-tertiary);">#10398</td>
+              <td><span class="tag medium"><span class="status-dot medium" style="width:6px;height:6px;"></span> 中危</span></td>
+              <td>终端用户多次登录失败行为</td>
+              <td>Desktop-HQ3-WS</td>
+              <td><span class="tag neutral">终端</span></td>
+              <td>2026-05-06 07:10:44</td>
+              <td><span class="status-badge"><span class="status-dot done"></span> 已处置</span></td>
+              <td><div class="progress-bar"><div class="progress-track"><div class="progress-fill success" style="width:100%"></div></div><span class="progress-text">100%</span></div></td>
+              <td><a class="action-link">详情</a></td>
+            </tr>
+            <tr>
+              <td style="color: var(--color-text-tertiary);">#10395</td>
+              <td><span class="tag critical"><span class="status-dot critical" style="width:6px;height:6px;"></span> 严重</span></td>
+              <td>SQL 注入攻击尝试 (疑似渗透工具行为)</td>
+              <td>DB-Cluster-Core</td>
+              <td><span class="tag neutral">数据库</span></td>
+              <td>2026-05-06 06:30:12</td>
+              <td><span class="status-badge"><span class="status-dot pending"></span> 待处置</span></td>
+              <td><div class="progress-bar"><div class="progress-track"><div class="progress-fill danger" style="width:8%"></div></div><span class="progress-text">8%</span></div></td>
+              <td><a class="action-link">详情</a></td>
+            </tr>
+            <tr>
+              <td style="color: var(--color-text-tertiary);">#10392</td>
+              <td><span class="tag low"><span class="status-dot low" style="width:6px;height:6px;"></span> 低危</span></td>
+              <td>后台管理接口异常流量访问</td>
+              <td>Admin-VPC-Router</td>
+              <td><span class="tag neutral">网络</span></td>
+              <td>2026-05-06 05:15:20</td>
+              <td><span class="status-badge"><span class="status-dot done"></span> 已处置</span></td>
+              <td><div class="progress-bar"><div class="progress-track"><div class="progress-fill success" style="width:100%"></div></div><span class="progress-text">100%</span></div></td>
+              <td><a class="action-link">详情</a></td>
+            </tr>
+            <tr>
+              <td style="color: var(--color-text-tertiary);">#10388</td>
+              <td><span class="tag high"><span class="status-dot high" style="width:6px;height:6px;"></span> 高危</span></td>
+              <td>异常 DNS 隧道通信检测</td>
+              <td>DNS-Resolver-01</td>
+              <td><span class="tag neutral">网络</span></td>
+              <td>2026-05-06 04:02:38</td>
+              <td><span class="status-badge"><span class="status-dot running"></span> 处置中</span></td>
+              <td><div class="progress-bar"><div class="progress-track"><div class="progress-fill" style="width:72%"></div></div><span class="progress-text">72%</span></div></td>
+              <td><a class="action-link">详情</a></td>
+            </tr>
+            <tr>
+              <td style="color: var(--color-text-tertiary);">#10385</td>
+              <td><span class="tag medium"><span class="status-dot medium" style="width:6px;height:6px;"></span> 中危</span></td>
+              <td>容器逃逸风险 — 特权模式运行</td>
+              <td>K8s-Node-Worker-03</td>
+              <td><span class="tag neutral">容器</span></td>
+              <td>2026-05-06 03:18:55</td>
+              <td><span class="status-badge"><span class="status-dot failed"></span> 处置失败</span></td>
+              <td><div class="progress-bar"><div class="progress-track"><div class="progress-fill danger" style="width:45%"></div></div><span class="progress-text">45%</span></div></td>
+              <td><a class="action-link">详情</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <div class="page-btn disabled">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7.5 2L3.5 6L7.5 10"/></svg>
+        </div>
+        <div class="page-btn active">1</div>
+        <div class="page-btn">2</div>
+        <div class="page-btn">3</div>
+        <div class="page-ellipsis">···</div>
+        <div class="page-btn">18</div>
+        <div class="page-btn">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 2L8.5 6L4.5 10"/></svg>
+        </div>
+        <div class="page-goto">
+          前往 <input type="text" value="">
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+    document.querySelectorAll('.page-btn:not(.disabled)').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.page-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+[
+  { "id": "log-retrieval", "name": "日志检索", "category": "通用运维", "keywords": ["search", "query", "record"] },
+  { "id": "alarm", "name": "告警", "category": "填充", "keywords": ["warning", "alert", "security"] },
+  { "id": "character-setting", "name": "人物设定", "category": "智能体", "keywords": ["profile", "actor", "persona"] },
+  { "id": "thinking-path", "name": "思考路径", "category": "智能体", "keywords": ["reasoning", "mind-map", "logic"] },
+  { "id": "branch-routing", "name": "分支路由", "category": "工作流", "keywords": ["split", "fork", "condition"] },
+  { "id": "parallel-routing", "name": "并行路由", "category": "工作流", "keywords": ["concurrency", "multiple"] },
+  { "id": "host", "name": "主机", "category": "攻击路径", "keywords": ["server", "device", "endpoint"] },
+  { "id": "attacker", "name": "攻击者", "category": "攻击路径", "keywords": ["hacker", "source", "ip"] },
+  { "id": "victim", "name": "受害者", "category": "攻击路径", "keywords": ["target", "destination", "affected"] },
+  { "id": "virus-detection", "name": "病毒查杀", "category": "攻击路径", "keywords": ["malware", "scan", "clean"] },
+  { "id": "add-session", "name": "新增会话", "category": "智能问答", "keywords": ["new-chat", "plus", "create"] },
+  { "id": "prompt", "name": "提示词", "category": "智能问答", "keywords": ["template", "guide", "info"] },
+  { "id": "pdf", "name": "pdf", "category": "知识库", "keywords": ["file", "document"] },
+  { "id": "csv", "name": "csv", "category": "知识库", "keywords": ["table", "data", "excel"] }
+]

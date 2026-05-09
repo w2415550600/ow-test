@@ -1,0 +1,35 @@
+// QAXD 间距与布局规范 (SCSS)
+// Source: SpacingLayout.md
+
+// 1. 核心布局尺寸
+$layout-header-height: 56px;
+$layout-sidebar-width: 216px;
+$layout-gutter-width: 16px;
+
+// 2. 栅格系统参数
+$grid-columns: 24;
+$grid-base-step: 8px;
+
+// 3. 响应式断点 (Breakpoints)
+$breakpoint-sm: 1280px;
+$breakpoint-md: 1366px;
+$breakpoint-lg: 1440px;
+$breakpoint-xl: 1920px;
+
+// 4. 间距变量 (Spacing Tokens)
+$spacing-compact:  4px;
+$spacing-standard: 8px;
+$spacing-loose:    16px;
+$spacing-wide:     24px;
+$spacing-vast:     32px;
+
+:root {
+  --spacing-compact: #{$spacing-compact};
+  --spacing-standard: #{$spacing-standard};
+  --spacing-loose: #{$spacing-loose};
+  --spacing-wide: #{$spacing-wide};
+  --spacing-vast: #{$spacing-vast};
+  
+  --layout-header-height: #{$layout-header-height};
+  --layout-sidebar-width: #{$layout-sidebar-width};
+}

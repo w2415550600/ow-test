@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D 环形交互卡片库</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #ffffff;
+    --card-w: 120px;
+    --card-h: 160px;
+    --accent: #4a90d9;
+  }
+
+  body {
+    background: var(--bg);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body:active { cursor: grabbing; }
+  body.detail-mode { cursor: default; }
+  body.detail-mode:active { cursor: default; }
+
+  .scene {
+    width: 100vw;
+    height: 100vh;
+    perspective: 2000px;
+    perspective-origin: 50% 45%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ring {
+    position: relative;
+    width: 0; height: 0;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+
+  .card {
+    position: absolute;
+    width: var(--card-w);
+    height: var(--card-h);
+    left: calc(var(--card-w) / -2);
+    top: calc(var(--card-h) / -2);
+    transform-style: preserve-3d;
+    will-change: transform, opacity;
+    cursor: pointer;
+  }
+
+  .card-inner {
+    width: 100%;
+    height: 100%;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1),
+                border-color 0.3s ease,
+                border-radius 0.5s ease,
+                box-shadow 0.5s ease,
+                border-width 0.3s ease;
+  }
+
+  .card:hover .card-inner {
+    transform: translateY(-40px);
+    border-color: #bbb;
+  }
+
+  .card-inner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  .card-inner img.loaded { opacity: 1; }
+
+  .card-title {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 6px 8px;
+    font-size: 9px;
+    font-weight: 500;
+    color: #333;
+    background: rgba(255,255,255,0.9);
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card:hover .card-title,
+  .card.active .card-title {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .card.active .card-inner {
+    border-color: var(--accent);
+    border-width: 2px;
+  }
+
+  /* 详情模式下，圆环中被选中的卡片隐藏（看起来像飞出去了） */
+  .card.detached {
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  /* ============================================
+   *  详情模式遮罩
+   * ============================================ */
+  .detail-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255, 255, 255, 0);
+    z-index: 400;
+    pointer-events: none;
+    transition: background 0.5s ease;
+    cursor: default;
+  }
+  .detail-overlay.active {
+    background: rgba(255, 255, 255, 0.92);
+    pointer-events: all;
+  }
+
+  /* ============================================
+   *  飞出的详情卡片（从圆环位置飞到屏幕中央）
+   * ============================================ */
+  .fly-card {
+    position: fixed;
+    z-index: 600;
+    pointer-events: none;
+    will-change: transform, opacity, width, height;
+    opacity: 0;
+    visibility: hidden;
+  }
+  .fly-card.active {
+    pointer-events: all;
+    visibility: visible;
+  }
+  .fly-card-inner {
+    width: 100%;
+    height: 100%;
+    background: #f0f0f0;
+    overflow: hidden;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .fly-card-inner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* ============================================
+   *  详情信息面板（标题+描述+翻页器）
+   * ============================================ */
+  .detail-info {
+    position: fixed;
+    z-index: 610;
+    pointer-events: none;
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+  .detail-info.active {
+    pointer-events: all;
+  }
+
+  .detail-info-inner {
+    max-width: 340px;
+  }
+
+  .detail-index {
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  .detail-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a2e;
+    line-height: 1.3;
+    margin-bottom: 16px;
+  }
+
+  .detail-desc {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.8;
+    margin-bottom: 0;
+  }
+
+  /* ============================================
+   *  底部翻页器（常驻居中）
+   * ============================================ */
+  .bottom-pager {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 620;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+  .bottom-pager.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .pager-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    background: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: #666;
+    transition: all 0.25s ease;
+  }
+  .pager-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(74,144,217,0.05);
+  }
+
+  .pager-indicator {
+    font-size: 13px;
+    color: #999;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pager-close {
+    margin-left: auto;
+    font-size: 12px;
+    color: #bbb;
+    cursor: pointer;
+    padding: 8px 16px;
+    border: 1px solid #eee;
+    border-radius: 20px;
+    background: #fff;
+    transition: all 0.25s ease;
+    letter-spacing: 0.5px;
+  }
+  .pager-close:hover {
+    border-color: #999;
+    color: #666;
+  }
+
+  /* ============================================
+   *  HUD 信息层
+   * ============================================ */
+  .hud-top {
+    position: fixed; top: 30px; left: 50%; transform: translateX(-50%);
+    text-align: center; z-index: 100; pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+  .hud-top h1 {
+    font-size: 14px; font-weight: 600; color: #333;
+    letter-spacing: 3px; text-transform: uppercase;
+  }
+
+  .hud-bottom {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+    z-index: 100; pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+  .hud-bottom p { font-size: 11px; color: #aaa; letter-spacing: 0.5px; }
+
+  body.detail-mode .hud-top,
+  body.detail-mode .hud-bottom,
+  body.detail-mode .info-panel,
+  body.detail-mode .counter,
+  body.detail-mode .controls {
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  .info-panel {
+    position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+    z-index: 100; text-align: center; pointer-events: none;
+  }
+  .active-title {
+    font-size: 18px; font-weight: 600; color: #222;
+    opacity: 0; transform: translateY(8px);
+    transition: opacity 0.4s, transform 0.4s;
+  }
+  .active-title.visible { opacity: 1; transform: translateY(0); }
+  .active-index { font-size: 11px; color: #999; margin-top: 4px; letter-spacing: 1px; }
+
+  .controls {
+    position: fixed; right: 30px; top: 50%; transform: translateY(-50%);
+    z-index: 100; display: flex; flex-direction: column; gap: 20px;
+    pointer-events: all;
+    transition: opacity 0.4s ease;
+  }
+  .ctrl-group { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+  .ctrl-label { font-size: 9px; color: #bbb; text-transform: uppercase; letter-spacing: 1px; }
+  .ctrl-val { font-size: 9px; color: #999; }
+  .ctrl-slider {
+    -webkit-appearance: none; appearance: none;
+    width: 80px; height: 1px; background: #ddd;
+    border-radius: 1px; outline: none; cursor: pointer;
+  }
+  .ctrl-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #999; cursor: pointer;
+  }
+
+  .counter {
+    position: fixed; left: 30px; bottom: 30px; z-index: 100;
+    font-size: 11px; color: #ccc; letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+    transition: opacity 0.4s ease;
+  }
+
+  @media (max-width: 768px) {
+    :root { --card-w: 80px; --card-h: 110px; }
+    .controls { display: none; }
+    .detail-info-inner { max-width: 220px; }
+    .detail-title { font-size: 22px; }
+    .detail-desc { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hud hud-top"><h1>3D Ring Gallery</h1></div>
+<div class="hud hud-bottom"><p>Scroll / Drag / Arrow Keys · Click Card for Detail</p></div>
+
+<div class="info-panel">
+  <div class="active-title" id="activeTitle"></div>
+  <div class="active-index" id="activeIndex"></div>
+</div>
+
+<div class="counter" id="counter">01 / 40</div>
+
+<div class="controls">
+  <div class="ctrl-group">
+    <span class="ctrl-label">Radius</span>
+    <input type="range" class="ctrl-slider" id="sRadius" min="200" max="800" value="445">
+    <span class="ctrl-val" id="vRadius">445</span>
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">Speed</span>
+    <input type="range" class="ctrl-slider" id="sSpeed" min="1" max="100" value="40">
+    <span class="ctrl-val" id="vSpeed">40</span>
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">Cards</span>
+    <input type="range" class="ctrl-slider" id="sCards" min="8" max="40" value="40">
+    <span class="ctrl-val" id="vCards">40</span>
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">Tilt</span>
+    <input type="range" class="ctrl-slider" id="sTilt" min="0" max="80" value="22">
+    <span class="ctrl-val" id="vTilt">22°</span>
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">Rotate</span>
+    <input type="range" class="ctrl-slider" id="sRotate" min="0" max="90" value="90">
+    <span class="ctrl-val" id="vRotate">90°</span>
+  </div>
+</div>
+
+<!-- 详情遮罩 -->
+<div class="detail-overlay" id="detailOverlay"></div>
+
+<!-- 飞出的详情卡片 -->
+<div class="fly-card" id="flyCard">
+  <div class="fly-card-inner">
+    <img id="flyImg" alt="">
+  </div>
+</div>
+
+<!-- 详情信息面板（不含翻页器） -->
+<div class="detail-info" id="detailInfo">
+  <div class="detail-info-inner">
+    <div class="detail-index" id="detailIndex"></div>
+    <div class="detail-title" id="detailTitle"></div>
+    <div class="detail-desc" id="detailDesc"></div>
+  </div>
+</div>
+
+<!-- 底部翻页器（常驻居中） -->
+<div class="bottom-pager" id="bottomPager">
+  <button class="pager-btn" id="pagerPrev">←</button>
+  <span class="pager-indicator" id="pagerIndicator"></span>
+  <button class="pager-btn" id="pagerNext">→</button>
+  <button class="pager-close" id="pagerClose">返回圆环</button>
+</div>
+
+<div class="scene" id="scene">
+  <div class="ring" id="ring"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Observer.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Draggable.min.js"></script>
+
+<script>
+(function() {
+  'use strict';
+
+  const CFG = {
+    count: 40,
+    radius: 445,
+    speed: 0.40,
+    tilt: -22,
+    cardRotate: 90,
+    autoRotate: true,
+    autoSpeed: 0.08,
+  };
+
+  const DATA = [
+    { title: 'Dashboard Discovery', seed: 'dash-01', desc: '一站式安全态势感知仪表盘，通过可视化图表实时展示全网威胁情报、漏洞分布和攻击趋势，帮助安全团队快速定位风险并做出决策。' },
+    { title: 'Design System', seed: 'design-02', desc: '企业级设计系统，涵盖色彩规范、字体层级、组件库和交互模式，确保产品间视觉一致性与开发效率，服务于50+内部产品线。' },
+    { title: 'New Style Guide', seed: 'style-03', desc: '新一代品牌风格指南，融合极简主义与科技感，定义了全新的圆角、阴影和动效规范，推动品牌视觉升级。' },
+    { title: 'AI Guidline', seed: 'ai-04', desc: 'AI产品设计准则，规范了人工智能场景下的交互模式、透明度要求和信任构建策略，确保AI产品的可靠性和用户体验。' },
+    { title: 'Motion Design', seed: 'motion-05', desc: '动效设计体系，定义了过渡动画、微交互和反馈动效的时间曲线与编排规则，赋予产品流畅自然的操作体验。' },
+    { title: 'Brand Design', seed: 'brand-06', desc: '品牌视觉体系设计，从Logo延展到完整的应用场景，包括名片、信纸、展板和数字媒体模板，统一品牌对外形象。' },
+    { title: 'Experience Design', seed: 'exp-07', desc: '全链路用户体验设计，覆盖用户研究、信息架构、交互原型和可用性测试，以用户为中心驱动产品迭代优化。' },
+    { title: 'Security Platform', seed: 'sec-08', desc: '综合安全运营平台，整合SIEM、SOAR和威胁狩猎能力，提供从检测到响应的自动化安全运营工作流。' },
+    { title: 'Threat Intel', seed: 'threat-09', desc: '威胁情报平台，汇聚多源情报数据，通过关联分析和自动化指标提取，为安全运营提供可操作的威胁洞察。' },
+    { title: 'Cloud Mesh', seed: 'cloud-10', desc: '云安全网格架构，基于零信任原则设计微隔离策略，实现多云环境下的细粒度访问控制和流量可视化。' },
+    { title: 'Zero Trust', seed: 'zero-11', desc: '零信任架构落地方案，重新定义身份验证、设备信任和最小权限原则，构建不依赖网络边界的可信访问体系。' },
+    { title: 'SOC Center', seed: 'soc-12', desc: '安全运营中心大屏设计，实时展示告警分布、处置进度和威胁态势，支撑7×24小时安全值守与事件响应。' },
+    { title: 'Data Analytics', seed: 'data-13', desc: '安全数据分析平台，基于大数据引擎提供日志检索、异常检测和趋势预测，将海量数据转化为安全决策依据。' },
+    { title: 'Network Graph', seed: 'net-14', desc: '网络拓扑图谱可视化，通过力导向图和层次布局展示资产关联、攻击路径和风险传播链，辅助威胁分析。' },
+    { title: 'Endpoint Sec', seed: 'endpt-15', desc: '终端安全防护方案，集成EDR、反病毒和主机入侵检测能力，提供全生命周期的终端威胁防护与响应。' },
+    { title: 'Vuln Scanner', seed: 'vuln-16', desc: '漏洞扫描管理系统，支持资产发现、漏洞检测、风险评估和修复追踪，帮助组织持续掌握漏洞态势。' },
+    { title: 'Incident Resp', seed: 'incident-17', desc: '安全事件响应平台，提供标准化响应流程、自动化剧本和协作工具，将事件平均响应时间缩短60%。' },
+    { title: 'Compliance', seed: 'comp-18', desc: '合规管理平台，内置等保2.0、GDPR等合规模板，自动化检查与证据收集，降低合规审计成本。' },
+    { title: 'Identity Mgmt', seed: 'id-19', desc: '统一身份管理平台，整合SSO、MFA和权限治理，实现人员全生命周期的身份管理与访问控制。' },
+    { title: 'API Gateway', seed: 'api-20', desc: 'API安全网关，提供流量管控、认证鉴权、请求校验和威胁防护，保障API接口的安全性与可用性。' },
+    { title: 'Threat Map', seed: 'map-21', desc: '全球威胁态势地图，实时可视化展示攻击来源、传播路径和影响范围，提供直观的安全态势感知。' },
+    { title: 'Log Analyzer', seed: 'log-22', desc: '智能日志分析引擎，基于机器学习实现异常日志识别、根因分析和自动分类，提升运维效率。' },
+    { title: 'Risk Scoring', seed: 'risk-23', desc: '风险量化评分系统，综合资产价值、威胁概率和脆弱性计算风险分值，支撑风险优先级排序和决策。' },
+    { title: 'Asset Inventory', seed: 'asset-24', desc: '资产清点管理系统，自动发现和分类网络资产，建立完整的资产台账，为安全管理提供基础数据支撑。' },
+    { title: 'Policy Engine', seed: 'policy-25', desc: '安全策略引擎，统一管理和下发访问控制、审计和防护策略，确保安全规则在全网一致执行。' },
+    { title: 'Alert Center', seed: 'alert-26', desc: '告警中心设计，通过智能聚合、降噪和优先级排序，将海量告警转化为可操作的安全事件。' },
+    { title: 'Forensics', seed: 'forensic-27', desc: '电子取证分析平台，提供磁盘取证、内存分析和网络取证能力，帮助追踪攻击者行为链和证据保全。' },
+    { title: 'Sandbox', seed: 'sandbox-28', desc: '恶意文件沙箱分析系统，在隔离环境中动态执行可疑文件，通过行为监控识别零日威胁和高级恶意软件。' },
+    { title: 'Deception Grid', seed: 'decept-29', desc: '欺骗防御网络，部署高仿真蜜罐和诱饵资产，诱导攻击者进入陷阱，实现早期威胁检测与攻击者画像。' },
+    { title: 'Threat Feed', seed: 'feed-30', desc: '威胁情报订阅源管理，整合STIX/TAXII标准格式情报，实现指标自动导入、关联匹配和告警触发。' },
+    { title: 'Encrypt Vault', seed: 'encrypt-31', desc: '密钥保险库系统，提供密钥生成、存储、轮换和销毁的全生命周期管理，确保加密资产安全可控。' },
+    { title: 'Access Control', seed: 'access-32', desc: '精细化访问控制系统，基于RBAC和ABAC混合模型，实现动态权限决策和最小权限原则的落地执行。' },
+    { title: 'Audit Trail', seed: 'audit-33', desc: '审计轨迹追踪系统，全量记录用户操作、权限变更和数据访问行为，满足合规审计和事件溯源需求。' },
+    { title: 'ML Detector', seed: 'ml-34', desc: '机器学习威胁检测引擎，通过异常检测模型和深度学习算法，识别传统规则无法覆盖的高级持续性威胁。' },
+    { title: 'Response Play', seed: 'play-35', desc: '自动化响应剧本平台，预置100+常见场景的处置流程，支持一键启动和并行编排，加速事件闭环。' },
+    { title: 'Topology View', seed: 'topo-36', desc: '网络拓扑可视化视图，自动绘制资产连接关系和流量路径，快速定位异常节点和网络瓶颈。' },
+    { title: 'DNS Monitor', seed: 'dns-37', desc: 'DNS安全监控系统，检测DGA域名、DNS隧道和异常解析行为，阻断基于DNS协议的数据窃取和C2通信。' },
+    { title: 'Firewall Rule', seed: 'fw-38', desc: '防火墙策略优化平台，分析规则冲突、冗余和阴影，推荐最优策略集，提升防护效果和管理效率。' },
+    { title: 'Proxy Layer', seed: 'proxy-39', desc: '安全代理层，提供流量审计、内容过滤和SSL解密能力，作为安全检测链路的关键一环。' },
+    { title: 'Session Mgmt', seed: 'session-40', desc: '会话安全管理系统，监控异常登录、并发会话和凭证滥用，防止会话劫持和横向移动攻击。' },
+  ];
+
+  // DOM 引用
+  const scene = document.getElementById('scene');
+  const ring = document.getElementById('ring');
+  const activeTitleEl = document.getElementById('activeTitle');
+  const activeIndexEl = document.getElementById('activeIndex');
+  const counterEl = document.getElementById('counter');
+  const detailOverlay = document.getElementById('detailOverlay');
+  const flyCard = document.getElementById('flyCard');
+  const flyImg = document.getElementById('flyImg');
+  const detailInfo = document.getElementById('detailInfo');
+  const detailIndex = document.getElementById('detailIndex');
+  const detailTitle = document.getElementById('detailTitle');
+  const detailDesc = document.getElementById('detailDesc');
+  const pagerIndicator = document.getElementById('pagerIndicator');
+  const pagerPrev = document.getElementById('pagerPrev');
+  const pagerNext = document.getElementById('pagerNext');
+  const pagerClose = document.getElementById('pagerClose');
+  const bottomPager = document.getElementById('bottomPager');
+
+  // 运行时状态
+  let angle = 0;
+  let target = 0;
+  let dragging = false;
+  let dragMoved = false;
+  let cards = [];
+  let activeIdx = -1;
+  let lastTouch = 0;
+  let tiltCur = -22;
+  let mouseTiltX = 0;
+  let mouseTiltY = 0;
+  let mouseInScene = false;
+  let visibleCount = 40;
+  let entranceDone = false;
+
+  // 详情模式状态
+  let detailMode = false;
+  let detailIdx = 0;
+  let detailTl = null;
+
+  // 详情卡片的目标尺寸（原尺寸的120%）
+  const DETAIL_W = 384;
+  const DETAIL_H = 528;
+
+  /* ============================================
+   *  创建卡片
+   * ============================================ */
+  function createCards() {
+    ring.innerHTML = '';
+    cards = [];
+    for (let i = 0; i < CFG.count; i++) {
+      const d = DATA[i] || { title: `Project ${i+1}`, seed: `p${i}` };
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.innerHTML = `
+        <div class="card-inner">
+          <img data-src="https://picsum.photos/seed/${d.seed}/240/320" alt="${d.title}">
+          <div class="card-title">${d.title}</div>
+        </div>
+      `;
+      ring.appendChild(el);
+      cards.push(el);
+
+      const img = el.querySelector('img');
+      img.addEventListener('load', () => img.classList.add('loaded'));
+      el.addEventListener('click', () => {
+        if (!dragMoved) clickCard(i);
+      });
+    }
+    setTimeout(() => {
+      document.querySelectorAll('.card-inner img[data-src]').forEach(img => {
+        img.src = img.dataset.src;
+        img.removeAttribute('data-src');
+      });
+    }, 1500);
+  }
+
+  /* ============================================
+   *  更新卡片位置（圆环始终更新，永不停止）
+   * ============================================ */
+  function updateCards() {
+    const n = cards.length;
+    const step = 360 / n;
+    const R = CFG.radius;
+    let closestIdx = 0;
+    let maxZ = -Infinity;
+
+    cards.forEach((card, i) => {
+      // 出场动画：超出visibleCount的卡片隐藏
+      if (i >= visibleCount) {
+        card.style.opacity = 0;
+        card.style.transform = `rotateY(${step * i + angle}deg) translateZ(0px)`;
+        card.style.zIndex = -1;
+        return;
+      }
+
+      const deg = step * i + angle;
+      card.style.transform = `rotateY(${deg}deg) translateZ(${R}px) rotateY(${CFG.cardRotate}deg)`;
+
+      const rad = deg * Math.PI / 180;
+      const worldZ = Math.cos(rad) * R;
+      const depthFactor = (worldZ + R) / (2 * R);
+      const opacity = 0.12 + depthFactor * 0.88;
+      card.style.opacity = opacity;
+      card.style.zIndex = Math.round(depthFactor * 100);
+
+      if (worldZ > maxZ) { maxZ = worldZ; closestIdx = i; }
+    });
+
+    if (!detailMode) updateActive(closestIdx);
+  }
+
+  function updateActive(idx) {
+    if (activeIdx !== idx) {
+      if (activeIdx >= 0 && cards[activeIdx]) cards[activeIdx].classList.remove('active');
+      cards[idx]?.classList.add('active');
+      activeIdx = idx;
+      const d = DATA[idx] || { title: `Project ${idx+1}` };
+      activeTitleEl.textContent = d.title;
+      activeTitleEl.classList.add('visible');
+      activeIndexEl.textContent = `${String(idx+1).padStart(2,'0')} / ${String(cards.length).padStart(2,'0')}`;
+      counterEl.textContent = `${String(idx+1).padStart(2,'0')} / ${String(cards.length).padStart(2,'0')}`;
+    }
+  }
+
+  /* ============================================
+   *  点击卡片 → 进入详情
+   * ============================================ */
+  function clickCard(idx) {
+    if (detailMode) return;
+    openDetail(idx);
+  }
+
+  /* ============================================
+   *  ★ 打开详情：圆环卡片"飞出"效果
+   *
+   *  原理：
+   *  1. 获取圆环卡片在屏幕上的位置
+   *  2. 隐藏圆环中的那张卡片（加.detached类）
+   *  3. 在同一位置显示飞出卡片（flyCard），视觉上无缝衔接
+   *  4. 用GSAP把flyCard飞到屏幕中央并放大
+   *  5. 同时显示遮罩和信息面板
+   *  ========候
+   *  关闭时反向：flyCard飞回原位→显示圆环卡片→移除flyCard
+   * ============================================ */
+  function openDetail(idx) {
+    detailMode = true;
+    detailIdx = idx;
+    document.body.classList.add('detail-mode');
+
+    const d = DATA[idx] || { title: `Project ${idx+1}`, desc: '暂无描述' };
+    const cardEl = cards[idx];
+    const cardRect = cardEl.getBoundingClientRect();
+
+    // ★ 关键：隐藏圆环中的卡片，让用户感觉它"飞出去了"
+    cardEl.classList.add('detached');
+
+    // 飞出卡片初始位置 = 圆环卡片的屏幕位置
+    const startLeft = cardRect.left;
+    const startTop = cardRect.top;
+    const startW = cardRect.width;
+    const startH = cardRect.height;
+
+    // ★ 计算居中布局：卡片 + 56px间距 + 信息面板 整体居中
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const INFO_W = 340;  // 信息面板宽度
+    const GAP = 56;      // 卡片与信息面板间距
+    const totalW = DETAIL_W + GAP + INFO_W;  // 整体宽度
+    const groupLeft = (vw - totalW) / 2;     // 整体左起点
+    const endLeft = groupLeft;                // 卡片左起点
+    const endTop = vh * 0.5 - DETAIL_H / 2;  // 卡片垂直居中
+    const infoLeft = groupLeft + DETAIL_W + GAP;  // 信息面板左起点
+    const infoTop = vh * 0.5 - 100;           // 信息面板垂直偏移
+
+    // 设置飞出卡片图片（高清大图）
+    flyImg.src = `https://picsum.photos/seed/${d.seed}/640/880`;
+
+    // ★ 初始化飞出卡片：与圆环卡片完全重合
+    gsap.set(flyCard, {
+      left: startLeft,
+      top: startTop,
+      width: startW,
+      height: startH,
+      opacity: 1,
+    });
+    flyCard.classList.add('active');
+
+    // 初始化信息面板
+    gsap.set(detailInfo, {
+      left: infoLeft,
+      top: infoTop,
+      opacity: 0,
+    });
+    detailInfo.classList.add('active');
+
+    // 更新详情内容
+    detailIndex.textContent = `${String(idx+1).padStart(2,'0')} / ${String(cards.length).padStart(2,'0')}`;
+    detailTitle.textContent = d.title;
+    detailDesc.textContent = d.desc || '暂无详细描述';
+    pagerIndicator.textContent = `${idx+1} / ${cards.length}`;
+
+    // 激活遮罩
+    detailOverlay.classList.add('active');
+
+    // ★ 显示底部翻页器
+    bottomPager.classList.add('active');
+
+    // ★ GSAP 动画时间线
+    if (detailTl) detailTl.kill();
+    detailTl = gsap.timeline();
+
+    // 飞出卡片：从圆环位置飞到目标位置 + 放大
+    detailTl.to(flyCard, {
+      left: endLeft,
+      top: endTop,
+      width: DETAIL_W,
+      height: DETAIL_H,
+      duration: 0.7,
+      ease: 'power2.out',
+    }, 0);
+
+    // 信息面板淡入
+    detailTl.to(detailInfo, {
+      opacity: 1,
+      duration: 0.5,
+      ease: 'power2.out',
+    }, 0.25);
+
+    // 内容逐个出现
+    detailTl.from(detailIndex, { y: 10, opacity: 0, duration: 0.3, ease: 'power2.out' }, 0.3);
+    detailTl.from(detailTitle, { y: 15, opacity: 0, duration: 0.4, ease: 'power2.out' }, 0.35);
+    detailTl.from(detailDesc, { y: 15, opacity: 0, duration: 0.4, ease: 'power2.out' }, 0.45);
+  }
+
+  /* ============================================
+   *  ★ 关闭详情：飞出卡片飞回圆环位置
+   * ============================================ */
+  function closeDetail() {
+    if (!detailMode) return;
+
+    const cardEl = cards[detailIdx];
+    const cardRect = cardEl.getBoundingClientRect();
+
+    // 飞回目标 = 圆环卡片当前位置
+    const targetLeft = cardRect.left;
+    const targetTop = cardRect.top;
+    const targetW = cardRect.width;
+    const targetH = cardRect.height;
+
+    if (detailTl) detailTl.kill();
+    detailTl = gsap.timeline({
+      onComplete: () => {
+        detailMode = false;
+        document.body.classList.remove('detail-mode');
+        flyCard.classList.remove('active');
+        detailInfo.classList.remove('active');
+        // ★ 恢复圆环卡片显示
+        cardEl.classList.remove('detached');
+        gsap.set(flyCard, { opacity: 0 });
+        gsap.set(detailInfo, { opacity: 0 });
+      }
+    });
+
+    // 信息面板淡出
+    detailTl.to(detailInfo, {
+      opacity: 0,
+      duration: 0.35,
+      ease: 'power2.in',
+    }, 0);
+
+    // ★ 飞出卡片飞回圆环位置 + 缩小
+    detailTl.to(flyCard, {
+      left: targetLeft,
+      top: targetTop,
+      width: targetW,
+      height: targetH,
+      opacity: 0,
+      duration: 0.55,
+      ease: 'power2.inOut',
+    }, 0.05);
+
+    // 遮罩淡出
+    detailTl.add(() => {
+      detailOverlay.classList.remove('active');
+      // ★ 隐藏底部翻页器
+      bottomPager.classList.remove('active');
+    }, 0.15);
+
+    // ★ 在飞回动画快结束时，提前恢复圆环卡片（过渡无缝）
+    detailTl.add(() => {
+      cardEl.classList.remove('detached');
+    }, 0.4);
+  }
+
+  /* ============================================
+   *  ★ 翻页：当前卡片飞回 → 圆环旋转 → 新卡片飞出
+   * ============================================ */
+  function detailNavigate(dir) {
+    if (!detailMode) return;
+
+    const newIdx = ((detailIdx + dir) % CFG.count + CFG.count) % CFG.count;
+
+    // ★ 静默旋转圆环到新卡片位置
+    const step = 360 / cards.length;
+    const dest = -step * newIdx;
+    let diff = dest - angle;
+    diff = ((diff + 180) % 360 + 360) % 360 - 180;
+    target = angle + diff;
+    angle = target;
+
+    // 恢复旧卡片的圆环显示
+    cards[detailIdx].classList.remove('detached');
+    // 隐藏新卡片（准备飞出）
+    cards[newIdx].classList.add('detached');
+
+    const d = DATA[newIdx] || { title: `Project ${newIdx+1}`, desc: '暂无描述' };
+
+    // ★ 使用与openDetail相同的居中布局计算
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const INFO_W = 340;
+    const GAP = 56;
+    const totalW = DETAIL_W + GAP + INFO_W;
+    const groupLeft = (vw - totalW) / 2;
+    const endLeft = groupLeft;
+    const endTop = vh * 0.5 - DETAIL_H / 2;
+
+    if (detailTl) detailTl.kill();
+    detailTl = gsap.timeline({
+      onComplete: () => {
+        detailIdx = newIdx;
+      }
+    });
+
+    // 当前飞出卡片向反方向滑出
+    detailTl.to(flyCard, {
+      left: dir > 0 ? -DETAIL_W - 50 : vw + 50,
+      opacity: 0,
+      duration: 0.3,
+      ease: 'power2.in',
+    }, 0);
+
+    // 信息面板淡出
+    detailTl.to(detailInfo, {
+      opacity: 0,
+      duration: 0.2,
+      ease: 'power2.in',
+    }, 0);
+
+    // ★ 更新内容 + 从反方向滑入
+    detailTl.add(() => {
+      // 更新飞出卡片图片和内容
+      flyImg.src = `https://picsum.photos/seed/${d.seed}/640/880`;
+      detailIndex.textContent = `${String(newIdx+1).padStart(2,'0')} / ${String(cards.length).padStart(2,'0')}`;
+      detailTitle.textContent = d.title;
+      detailDesc.textContent = d.desc || '暂无详细描述';
+      pagerIndicator.textContent = `${newIdx+1} / ${cards.length}`;
+
+      // 从反方向起始位置开始
+      gsap.set(flyCard, {
+        left: dir > 0 ? vw + 50 : -DETAIL_W - 50,
+        top: endTop,
+        width: DETAIL_W,
+        height: DETAIL_H,
+        opacity: 0,
+      });
+      gsap.set(detailInfo, { opacity: 0 });
+    }, 0.3);
+
+    // 新卡片滑入到目标位置
+    detailTl.to(flyCard, {
+      left: endLeft,
+      top: endTop,
+      opacity: 1,
+      duration: 0.5,
+      ease: 'power2.out',
+    }, 0.35);
+
+    // 信息面板淡入
+    detailTl.to(detailInfo, {
+      opacity: 1,
+      duration: 0.4,
+      ease: 'power2.out',
+    }, 0.45);
+
+    detailTl.from(detailIndex, { y: 8, opacity: 0, duration: 0.25, ease: 'power2.out' }, 0.45);
+    detailTl.from(detailTitle, { y: 10, opacity: 0, duration: 0.3, ease: 'power2.out' }, 0.5);
+    detailTl.from(detailDesc, { y: 10, opacity: 0, duration: 0.3, ease: 'power2.out' }, 0.58);
+  }
+
+  /* ============================================
+   *  GSAP Observer：滚轮监听
+   * ============================================ */
+  function setupScroll() {
+    Observer.create({
+      target: scene,
+      type: 'wheel',
+      onWheel(e) {
+        if (detailMode) return;
+        target += (e.deltaY || e.deltaX) * CFG.speed * 0.08;
+        lastTouch = performance.now();
+      }
+    });
+  }
+
+  /* ============================================
+   *  GSAP Draggable：拖拽监听
+   * ============================================ */
+  function setupDrag() {
+    let startA = 0, startX = 0;
+    const proxy = document.createElement('div');
+    Draggable.create(proxy, {
+      trigger: scene,
+      type: 'x',
+      minimumMovement: 2,
+      onDragStart() {
+        if (detailMode) return;
+        dragging = true;
+        dragMoved = false;
+        startA = angle;
+        startX = this.x;
+        lastTouch = performance.now();
+      },
+      onDrag() {
+        if (detailMode) return;
+        dragMoved = true;
+        target = startA + (this.x - startX) * 0.2;
+        lastTouch = performance.now();
+      },
+      onDragEnd() {
+        dragging = false;
+        setTimeout(() => { dragMoved = false; }, 50);
+      },
+    });
+  }
+
+  /* ============================================
+   *  自动旋转
+   * ============================================ */
+  function autoRotate() {
+    let last = performance.now();
+    (function tick(now) {
+      const dt = (now - last) / 1000;
+      last = now;
+      if (!dragging && !detailMode && now - lastTouch > 4000) {
+        target += CFG.autoSpeed * dt * 8;
+      }
+      requestAnimationFrame(tick);
+    })(performance.now());
+  }
+
+  /* ============================================
+   *  动画主循环（圆环始终更新）
+   * ============================================ */
+  function loop() {
+    angle += (target - angle) * 0.06;
+
+    const targetTilt = CFG.tilt + (detailMode ? 0 : mouseTiltY);
+    tiltCur += (targetTilt - tiltCur) * 0.04;
+    if (typeof loop._tiltXCur === 'undefined') loop._tiltXCur = 0;
+    loop._tiltXCur += ((detailMode ? 0 : mouseTiltX) - loop._tiltXCur) * 0.04;
+    ring.style.transform = `rotateX(${tiltCur}deg) rotateY(${loop._tiltXCur}deg)`;
+    updateCards();
+
+    requestAnimationFrame(loop);
+  }
+
+  /* ============================================
+   *  控制面板
+   * ============================================ */
+  function setupControls() {
+    const bind = (id, vId, fn) => {
+      const s = document.getElementById(id);
+      const v = document.getElementById(vId);
+      s.addEventListener('input', () => fn(s, v));
+    };
+    bind('sRadius', 'vRadius', (s,v) => { CFG.radius = +s.value; v.textContent = s.value; });
+    bind('sSpeed', 'vSpeed', (s,v) => { CFG.speed = +s.value / 100; v.textContent = s.value; });
+    bind('sCards', 'vCards', (s,v) => { CFG.count = +s.value; v.textContent = s.value; createCards(); });
+    bind('sTilt', 'vTilt', (s,v) => { CFG.tilt = -(+s.value); v.textContent = s.value + '°'; });
+    bind('sRotate', 'vRotate', (s,v) => { CFG.cardRotate = +s.value; v.textContent = s.value + '°'; });
+  }
+
+  /* ============================================
+   *  鼠标跟随圆环倾斜
+   * ============================================ */
+  function setupMouseTilt() {
+    const MAX_TILT = 8;
+    scene.addEventListener('mousemove', (e) => {
+      if (detailMode) return;
+      mouseInScene = true;
+      const rect = scene.getBoundingClientRect();
+      const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+      const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+      mouseTiltX = -nx * MAX_TILT;
+      mouseTiltY = ny * MAX_TILT;
+    });
+    scene.addEventListener('mouseleave', () => {
+      mouseInScene = false;
+      mouseTiltX = 0;
+      mouseTiltY = 0;
+    });
+  }
+
+  /* ============================================
+   *  键盘控制
+   * ============================================ */
+  function setupKeys() {
+    document.addEventListener('keydown', e => {
+      if (detailMode) {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') detailNavigate(-1);
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') detailNavigate(1);
+        if (e.key === 'Escape') closeDetail();
+        return;
+      }
+      const step = 360 / cards.length;
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { target -= step; lastTouch = performance.now(); }
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { target += step; lastTouch = performance.now(); }
+    });
+  }
+
+  /* ============================================
+   *  触摸控制
+   * ============================================ */
+  function setupTouch() {
+    let tx = 0, ta = 0;
+    scene.addEventListener('touchstart', e => {
+      if (detailMode) return;
+      tx = e.touches[0].clientX; ta = angle;
+      dragging = true; dragMoved = false;
+      lastTouch = performance.now();
+    }, { passive: true });
+    scene.addEventListener('touchmove', e => {
+      if (detailMode) return;
+      dragMoved = true;
+      target = ta + (e.touches[0].clientX - tx) * 0.2;
+      lastTouch = performance.now();
+    }, { passive: true });
+    scene.addEventListener('touchend', () => {
+      dragging = false;
+      setTimeout(() => { dragMoved = false; }, 50);
+    });
+  }
+
+  /* ============================================
+   *  详情模式事件绑定
+   * ============================================ */
+  function setupDetail() {
+    // 点击遮罩空白区域关闭
+    detailOverlay.addEventListener('click', (e) => {
+      if (e.target === detailOverlay) closeDetail();
+    });
+
+    // 飞出卡片和信息面板点击不冒泡
+    flyCard.addEventListener('click', (e) => e.stopPropagation());
+    detailInfo.addEventListener('click', (e) => e.stopPropagation());
+
+    // 翻页按钮
+    pagerPrev.addEventListener('click', (e) => { e.stopPropagation(); detailNavigate(-1); });
+    pagerNext.addEventListener('click', (e) => { e.stopPropagation(); detailNavigate(1); });
+
+    // 关闭按钮
+    pagerClose.addEventListener('click', (e) => { e.stopPropagation(); closeDetail(); });
+  }
+
+  /* ============================================
+   *  出场动画
+   * ============================================ */
+  function playEntrance() {
+    CFG.tilt = -80;
+    tiltCur = -80;
+    visibleCount = 1;
+
+    const tl = gsap.timeline({
+      onComplete: () => { entranceDone = true; }
+    });
+
+    tl.to({ v: 1 }, {
+      v: CFG.count,
+      duration: 2.5,
+      ease: 'power1.out',
+      onUpdate() { visibleCount = Math.round(this.targets()[0].v); }
+    });
+
+    tl.to({ tilt: -80 }, {
+      tilt: -22,
+      duration: 1.5,
+      ease: 'power2.inOut',
+      onUpdate() { CFG.tilt = this.targets()[0].tilt; }
+    }, '-=0.5');
+  }
+
+  /* ============================================
+   *  初始化
+   * ============================================ */
+  function init() {
+    createCards();
+    setupScroll();
+    setupDrag();
+    setupControls();
+    setupKeys();
+    setupTouch();
+    setupMouseTilt();
+    setupDetail();
+    loop();
+    autoRotate();
+    playEntrance();
+    console.log('%c◯ 3D Ring Carousel + Detail Fly-Out', 'color: #4a90d9; font-weight: bold;');
+  }
+
+  if (typeof gsap !== 'undefined') init();
+  else window.addEventListener('load', init);
+})();
+</script>
+</body>
+</html>

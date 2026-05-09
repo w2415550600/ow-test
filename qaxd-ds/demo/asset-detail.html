@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>资产详情 - Web-Gateway-FW-02</title>
+  <style>
+    /* ================================================================
+       QAX Design System — Light Administration: Asset Detail Page
+       All tokens sourced from DESIGN.md / _colors.scss / _spacing.scss
+       Responsive: 100vw × 100vh, fluid layout
+       ================================================================ */
+
+    :root {
+      --color-accent: #105CF4;
+      --color-accent-hover: #3A79F6;
+      --color-accent-active: #0A4ACA;
+      --color-accent-focus: #6495F8;
+      --color-accent-fill: #E8F0FF;
+      --color-accent-fill-hover: #BBD1FD;
+      --color-accent-foreground: #FFFFFF;
+      --color-success: #00B82B;
+      --color-success-fill: #E8FFED;
+      --color-warning: #F48210;
+      --color-warning-fill: #FFF4E8;
+      --color-danger: #F42738;
+      --color-danger-fill: #FFE8EA;
+      --color-info: #1082F4;
+      --color-info-fill: #E8F4FF;
+      --color-threat-critical: #A00D19;
+      --color-threat-high: #F42738;
+      --color-threat-medium: #F48210;
+      --color-threat-low: #F4CB00;
+      --color-threat-security: #00B82B;
+      --color-threat-unknown: #A8ADB6;
+      --color-text-primary: #1E2127;
+      --color-text-secondary: #292D35;
+      --color-text-tertiary: #6D7585;
+      --color-text-quaternary: rgba(168, 173, 182, 0.65);
+      --color-border-primary: #C8CBD1;
+      --color-border-secondary: #ECEDEF;
+      --color-fill-hover: #ECEDEF;
+      --color-fill-active: #E8F0FF;
+      --color-background: #FFFFFF;
+      --color-background-sunken: #F3F3F4;
+      --color-background-elevated: #FFFFFF;
+      --color-background-overlay: #FFFFFF;
+      --color-background-accent: #F8F8F9;
+      --layout-header-height: 56px;
+      --layout-sidebar-width: 216px;
+      --layout-gutter: 16px;
+      --spacing-compact: 4px;
+      --spacing-standard: 8px;
+      --spacing-loose: 16px;
+      --spacing-wide: 24px;
+      --spacing-vast: 32px;
+      --radius-content: 2px;
+      --radius-wrapper: 4px;
+      --radius-container: 6px;
+      --radius-outer: 8px;
+      --shadow-l1: 0 1px 2px 0 rgba(30, 33, 39, 0.1);
+      --shadow-l2: 0 4px 8px 0 rgba(30, 33, 39, 0.1);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+      background: var(--color-background-sunken);
+      color: var(--color-text-primary);
+      width: 100vw;
+      height: 100vh;
+      min-width: 1024px;
+      overflow: hidden;
+      display: flex;
+      font-size: 12px;
+      line-height: 20px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ================================================================
+       SIDEBAR
+       ================================================================ */
+    .sidebar {
+      width: var(--layout-sidebar-width);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 0 var(--spacing-standard) var(--spacing-standard) var(--spacing-standard);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+      background: var(--color-background);
+      border-right: 1px solid var(--color-border-secondary);
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-standard);
+      height: var(--layout-header-height);
+      padding: 0 15px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-logo { width: 32px; height: 32px; flex-shrink: 0; }
+
+    .sidebar-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      white-space: nowrap;
+    }
+
+    .nav-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      overflow-y: auto;
+    }
+
+    .nav-group-title {
+      font-size: 12px;
+      color: var(--color-text-tertiary);
+      padding: var(--spacing-wide) var(--spacing-wide) var(--spacing-standard) var(--spacing-wide);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      height: 40px;
+      padding: 0 var(--spacing-wide);
+      gap: var(--spacing-standard);
+      cursor: pointer;
+      border-radius: var(--radius-wrapper);
+      transition: background 0.2s, color 0.2s;
+      color: var(--color-text-secondary);
+      font-size: 14px;
+    }
+
+    .nav-item:hover { background: var(--color-fill-hover); }
+    .nav-item.active { background: var(--color-accent); color: var(--color-accent-foreground); }
+
+    .nav-item-icon {
+      width: 16px; height: 16px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .nav-item-icon svg { width: 14px; height: 14px; }
+
+    .nav-item:not(.active) .nav-item-icon svg {
+      fill: var(--color-text-tertiary);
+      stroke: var(--color-text-tertiary);
+    }
+
+    .nav-item.active .nav-item-icon svg {
+      fill: var(--color-accent-foreground);
+      stroke: var(--color-accent-foreground);
+    }
+
+    .nav-item-text { flex: 1; white-space: nowrap; }
+
+    .nav-collapse {
+      position: absolute;
+      bottom: var(--spacing-standard);
+      right: var(--spacing-standard);
+      width: 16px; height: 16px;
+      cursor: pointer;
+      opacity: 0.5;
+    }
+
+    /* ================================================================
+       MAIN CONTENT — scrollable, 16px gutter
+       ================================================================ */
+    .main {
+      flex: 1;
+      height: 100vh;
+      padding: var(--layout-gutter);
+      display: flex;
+      flex-direction: column;
+      gap: var(--layout-gutter);
+      overflow-y: auto;
+      overflow-x: hidden;
+      min-width: 0;
+    }
+
+    /* --- Top Bar: breadcrumb row + button row --- */
+    .top-bar {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-loose);
+      flex-shrink: 0;
+    }
+
+    .breadcrumb {
+      font-size: 14px;
+      color: var(--color-text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-standard);
+      height: 24px;
+    }
+
+    .breadcrumb svg { width: 14px; height: 14px; }
+    .breadcrumb .sep { color: var(--color-border-primary); }
+    .breadcrumb .link { color: var(--color-accent); cursor: pointer; }
+    .breadcrumb .link:hover { opacity: 0.8; }
+    .breadcrumb .current { color: var(--color-text-secondary); }
+
+    .top-bar-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-standard);
+    }
+
+    .top-bar-btn {
+      height: 32px;
+      padding: 0 var(--spacing-loose);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--radius-wrapper);
+      background: var(--color-background);
+      color: var(--color-text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-standard);
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .top-bar-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+
+    .top-bar-btn.primary {
+      background: var(--color-accent);
+      border-color: var(--color-accent);
+      color: var(--color-accent-foreground);
+    }
+
+    .top-bar-btn.primary:hover { background: var(--color-accent-hover); border-color: var(--color-accent-hover); }
+
+    .top-bar-btn.danger {
+      color: var(--color-danger);
+      border-color: var(--color-danger);
+      background: transparent;
+    }
+
+    .top-bar-btn.danger:hover { background: var(--color-danger-fill); }
+
+    .top-bar-btn svg { width: 14px; height: 14px; }
+
+    /* ================================================================
+       ASSET HEADER CARD
+       ================================================================ */
+    .asset-header {
+      background: var(--color-background);
+      border: 1px solid var(--color-border-secondary);
+      border-radius: var(--radius-outer);
+      padding: var(--spacing-loose) var(--spacing-vast);
+      box-shadow: var(--shadow-l1);
+      flex-shrink: 0;
+    }
+
+    .asset-header-top {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-loose);
+    }
+
+    .asset-icon {
+      width: 56px; height: 56px;
+      border-radius: var(--radius-container);
+      background: var(--color-accent-fill);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .asset-icon svg { width: 28px; height: 28px; stroke: var(--color-accent); fill: none; }
+
+    .asset-header-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .asset-name-row {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-loose);
+      margin-bottom: var(--spacing-standard);
+    }
+
+    .asset-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      line-height: 28px;
+    }
+
+    .asset-status-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-compact);
+      padding: 2px var(--spacing-standard);
+      border-radius: var(--radius-wrapper);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .asset-status-tag.online { color: var(--color-success); background: var(--color-success-fill); }
+    .asset-status-tag.offline { color: var(--color-text-tertiary); background: var(--color-background-sunken); }
+
+    .status-dot-sm {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .status-dot-sm.green { background: var(--color-success); }
+    .status-dot-sm.gray { background: var(--color-text-tertiary); }
+
+    .asset-meta-row {
+      display: flex;
+      gap: var(--spacing-vast);
+      flex-wrap: wrap;
+    }
+
+    .asset-meta-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-compact);
+      font-size: 12px;
+      color: var(--color-text-tertiary);
+    }
+
+    .asset-meta-item .label { color: var(--color-text-tertiary); }
+    .asset-meta-item .value { color: var(--color-text-secondary); font-weight: 500; }
+    .asset-meta-item svg { width: 14px; height: 14px; stroke: var(--color-text-tertiary); fill: none; }
+
+    /* ================================================================
+       KPI CARDS ROW — 4-column security metrics
+       ================================================================ */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--layout-gutter);
+      flex-shrink: 0;
+    }
+
+    .kpi-card {
+      background: var(--color-background);
+      border: 1px solid var(--color-border-secondary);
+      border-radius: var(--radius-outer);
+      padding: var(--spacing-loose) var(--spacing-vast);
+      box-shadow: var(--shadow-l1);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-loose);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .kpi-card:hover {
+      border-color: rgba(16, 92, 244, 0.3);
+      box-shadow: var(--shadow-l2), 0 0 0 1px rgba(16, 92, 244, 0.08);
+    }
+
+    .kpi-info {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-standard);
+      min-width: 0;
+    }
+
+    .kpi-label { font-size: 14px; color: var(--color-text-tertiary); white-space: nowrap; }
+
+    .kpi-value-row {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-standard);
+    }
+
+    .kpi-value {
+      font-family: "DIN Alternate", "Helvetica Neue", sans-serif;
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--color-text-primary);
+    }
+
+    .kpi-icon {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .kpi-icon svg { width: 22px; height: 22px; }
+    .kpi-icon.red { background: var(--color-danger-fill); }
+    .kpi-icon.red svg { stroke: var(--color-danger); fill: none; }
+    .kpi-icon.orange { background: var(--color-warning-fill); }
+    .kpi-icon.orange svg { stroke: var(--color-warning); fill: none; }
+    .kpi-icon.blue { background: var(--color-info-fill); }
+    .kpi-icon.blue svg { stroke: var(--color-info); fill: none; }
+    .kpi-icon.green { background: var(--color-success-fill); }
+    .kpi-icon.green svg { stroke: var(--color-success); fill: none; }
+
+    /* ================================================================
+       TWO-COLUMN SECTION: Asset Info + Security Posture
+       ================================================================ */
+    .dual-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--layout-gutter);
+      flex-shrink: 0;
+    }
+
+    .info-card {
+      background: var(--color-background);
+      border: 1px solid var(--color-border-secondary);
+      border-radius: var(--radius-outer);
+      box-shadow: var(--shadow-l1);
+      overflow: hidden;
+    }
+
+    .info-card-header {
+      padding: var(--spacing-loose);
+      border-bottom: 1px solid var(--color-border-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .info-card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-text-secondary);
+    }
+
+    .info-card-action {
+      font-size: 12px;
+      color: var(--color-accent);
+      cursor: pointer;
+    }
+
+    .info-card-action:hover { opacity: 0.8; }
+
+    .info-card-body {
+      padding: var(--spacing-loose);
+    }
+
+    /* --- Description List for Asset Info --- */
+    .dl-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: var(--spacing-standard) var(--spacing-vast);
+    }
+
+    .dt {
+      font-size: 12px;
+      color: var(--color-text-tertiary);
+      white-space: nowrap;
+      line-height: 32px;
+    }
+
+    .dd {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      line-height: 32px;
+      min-width: 0;
+      word-break: break-all;
+    }
+
+    .dd .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-compact);
+      padding: 2px var(--spacing-standard);
+      border-radius: var(--radius-wrapper);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .dd .tag.critical { color: var(--color-threat-critical); background: var(--color-danger-fill); }
+    .dd .tag.high { color: var(--color-threat-high); background: var(--color-danger-fill); }
+    .dd .tag.medium { color: var(--color-threat-medium); background: var(--color-warning-fill); }
+    .dd .tag.low { color: #9A7B00; background: #FFF8E1; }
+    .dd .tag.info { color: var(--color-info); background: var(--color-info-fill); }
+    .dd .tag.success { color: var(--color-success); background: var(--color-success-fill); }
+    .dd .tag.neutral { color: var(--color-text-secondary); background: var(--color-background-sunken); }
+
+    /* --- Security Score Ring (CSS-only) --- */
+    .score-ring-container {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-vast);
+    }
+
+    .score-ring {
+      width: 88px; height: 88px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .score-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+
+    .score-ring-bg {
+      fill: none;
+      stroke: var(--color-border-secondary);
+      stroke-width: 6;
+    }
+
+    .score-ring-fill {
+      fill: none;
+      stroke-width: 6;
+      stroke-linecap: round;
+    }
+
+    .score-ring-fill.good { stroke: var(--color-success); }
+    .score-ring-fill.warn { stroke: var(--color-warning); }
+    .score-ring-fill.bad { stroke: var(--color-danger); }
+
+    .score-ring-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .score-number {
+      font-family: "DIN Alternate", "Helvetica Neue", sans-serif;
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--color-text-primary);
+      line-height: 1;
+    }
+
+    .score-label {
+      font-size: 10px;
+      color: var(--color-text-tertiary);
+      margin-top: 2px;
+    }
+
+    .score-details {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-standard);
+      flex: 1;
+      min-width: 0;
+    }
+
+    .score-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-standard);
+      font-size: 12px;
+    }
+
+    .score-item-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .score-item-label { color: var(--color-text-tertiary); flex: 1; }
+    .score-item-value { color: var(--color-text-secondary); font-weight: 500; }
+
+    /* --- Vulnerability List --- */
+    .vuln-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .vuln-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-standard);
+      padding: var(--spacing-standard) 0;
+      border-bottom: 1px solid var(--color-border-secondary);
+      font-size: 12px;
+    }
+
+    .vuln-item:last-child { border-bottom: none; }
+
+    .vuln-name { flex: 1; color: var(--color-text-secondary); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .vuln-cve { color: var(--color-accent); cursor: pointer; white-space: nowrap; }
+    .vuln-cve:hover { opacity: 0.8; }
+
+    /* ================================================================
+       TABLE SECTION — Related Alerts
+       ================================================================ */
+    .table-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 200px;
+      background: var(--color-background);
+      border: 1px solid var(--color-border-secondary);
+      border-radius: var(--radius-outer);
+      overflow: hidden;
+      box-shadow: var(--shadow-l1);
+    }
+
+    .table-header-row {
+      display: flex;
+      flex-direction: column;
+      padding: var(--spacing-loose);
+      border-bottom: none;
+      flex-shrink: 0;
+      gap: var(--spacing-loose);
+      position: relative;
+    }
+
+    .table-header-row::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: var(--spacing-loose);
+      right: var(--spacing-loose);
+      height: 1px;
+      background: var(--color-border-secondary);
+    }
+
+    .table-header-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-text-secondary);
+      line-height: 20px;
+    }
+
+    .table-header-toolbar {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-loose);
+      flex-wrap: wrap;
+    }
+
+    .table-header-left {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-standard);
+    }
+
+    .table-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-standard);
+      padding: 0 var(--spacing-loose);
+      height: 32px;
+      background: var(--color-accent);
+      border: 1px solid var(--color-accent);
+      border-radius: var(--radius-wrapper);
+      color: var(--color-accent-foreground);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+      font-weight: 500;
+    }
+
+    .table-action-btn:hover {
+      background: var(--color-accent-hover);
+      border-color: var(--color-accent-hover);
+    }
+
+    .table-action-btn svg { width: 14px; height: 14px; }
+
+    .table-header-right {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-standard);
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    .filter-select,
+    .filter-input {
+      height: 32px;
+      padding: 0 var(--spacing-loose);
+      border: 1px solid var(--color-border-primary);
+      border-radius: var(--radius-wrapper);
+      font-size: 12px;
+      color: var(--color-text-primary);
+      background: var(--color-background);
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .filter-select {
+      min-width: 120px;
+      cursor: pointer;
+      appearance: none; -webkit-appearance: none;
+      padding-right: var(--spacing-vast);
+      background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%236D7585' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+    }
+
+    .filter-input { min-width: 180px; }
+    .filter-select:focus, .filter-input:focus { border-color: var(--color-accent); }
+    .filter-input::placeholder { color: var(--color-text-quaternary); }
+
+    /* --- Table --- */
+    .table-wrapper {
+      flex: 1;
+      overflow: auto;
+      min-height: 0;
+      padding: 0 var(--spacing-loose);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 800px;
+    }
+
+    .data-table thead th {
+      height: 40px;
+      padding: 0 var(--spacing-loose);
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      border-right: 1px solid var(--color-border-secondary);
+      white-space: nowrap;
+      background: var(--color-background-sunken);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .data-table thead th:last-child { border-right: none; }
+
+    .th-sort {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-compact);
+      cursor: pointer;
+    }
+
+    .th-sort svg { width: 14px; height: 14px; opacity: 0.5; }
+
+    .data-table tbody tr {
+      border-bottom: 1px solid var(--color-border-secondary);
+      transition: background 0.15s;
+    }
+
+    .data-table tbody tr:hover { background: #F8F9FA; }
+
+    .data-table tbody td {
+      height: 48px;
+      padding: 0 var(--spacing-loose);
+      font-size: 12px;
+      color: var(--color-text-primary);
+      white-space: nowrap;
+    }
+
+    /* --- Tag / Badge --- */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px var(--spacing-standard);
+      border-radius: var(--radius-wrapper);
+      font-size: 12px;
+      gap: var(--spacing-compact);
+      font-weight: 500;
+    }
+
+    .tag.critical { color: var(--color-threat-critical); background: var(--color-danger-fill); }
+    .tag.high { color: var(--color-threat-high); background: var(--color-danger-fill); }
+    .tag.medium { color: var(--color-threat-medium); background: var(--color-warning-fill); }
+    .tag.low { color: #9A7B00; background: #FFF8E1; }
+    .tag.info { color: var(--color-info); background: var(--color-info-fill); }
+    .tag.success { color: var(--color-success); background: var(--color-success-fill); }
+    .tag.neutral { color: var(--color-text-secondary); background: var(--color-background-sunken); }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-compact);
+      font-size: 12px;
+    }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .status-dot.critical { background: var(--color-threat-critical); }
+    .status-dot.high { background: var(--color-threat-high); }
+    .status-dot.medium { background: var(--color-threat-medium); }
+    .status-dot.low { background: var(--color-threat-low); }
+    .status-dot.running { background: var(--color-accent); }
+    .status-dot.done { background: var(--color-success); }
+    .status-dot.pending { background: var(--color-warning); }
+    .status-dot.failed { background: var(--color-danger); }
+
+    .action-link {
+      color: var(--color-accent);
+      font-size: 12px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .action-link:hover { opacity: 0.8; }
+
+    /* --- Pagination --- */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0;
+      padding: var(--spacing-standard) var(--spacing-loose);
+      flex-shrink: 0;
+      border-top: 1px solid var(--color-border-secondary);
+    }
+
+    .page-btn {
+      min-width: 32px; height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--color-border-secondary);
+      border-radius: var(--radius-wrapper);
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      margin: 0 2px;
+      background: var(--color-background);
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .page-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+    .page-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #fff; }
+    .page-btn.disabled { opacity: 0.3; pointer-events: none; }
+
+    .page-ellipsis {
+      display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px;
+      font-size: 12px; color: var(--color-text-tertiary);
+    }
+
+    .page-goto {
+      display: flex; align-items: center; gap: var(--spacing-compact);
+      margin-left: var(--spacing-standard);
+      font-size: 12px; color: var(--color-text-secondary);
+    }
+
+    .page-goto input {
+      width: 32px; height: 32px;
+      background: var(--color-background);
+      border: 1px solid var(--color-border-secondary);
+      border-radius: var(--radius-wrapper);
+      color: var(--color-text-secondary);
+      text-align: center;
+      font-size: 12px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .page-goto input:focus { border-color: var(--color-accent); }
+
+    /* ================================================================
+       RESPONSIVE
+       ================================================================ */
+    @media (max-width: 1366px) {
+      .kpi-row { grid-template-columns: repeat(4, 1fr); }
+      .kpi-card { padding: var(--spacing-loose); }
+      .dual-section { grid-template-columns: 1fr 1fr; }
+      .filter-input { min-width: 140px; }
+    }
+
+    @media (max-width: 1280px) {
+      .sidebar { width: 64px; }
+      .sidebar-title, .nav-item-text, .nav-group-title { display: none; }
+      .nav-item { justify-content: center; padding: 0; }
+      .kpi-row { grid-template-columns: repeat(2, 1fr); }
+      .dual-section { grid-template-columns: 1fr; }
+      .asset-meta-row { gap: var(--spacing-loose); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ====== SIDEBAR ====== -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <svg class="sidebar-logo" viewBox="0 0 32 32" width="32" height="32">
+        <path d="M17 2L29 2L29 12.5" fill="#5fafff" opacity="0.9"/>
+        <path d="M4 2L16 2L16 16" fill="#3d53f7"/>
+        <path d="M4 19.5L16 19.5L16 30" fill="#5fafff" opacity="0.9"/>
+        <path d="M17 16L29 16L29 30" fill="#3d53f7"/>
+      </svg>
+      <span class="sidebar-title">安全态势感知</span>
+    </div>
+
+    <div class="nav-list">
+      <div class="nav-group-title">监控中心</div>
+      <div class="nav-item">
+        <div class="nav-item-icon">
+          <svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        </div>
+        <span class="nav-item-text">运营仪表盘</span>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-icon">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8.5L10.5 10"/></svg>
+        </div>
+        <span class="nav-item-text">实时告警</span>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-icon">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8l2 2 4-4" stroke-width="1.5"/></svg>
+        </div>
+        <span class="nav-item-text">威胁研判</span>
+      </div>
+
+      <div class="nav-group-title">资产管理</div>
+      <div class="nav-item active">
+        <div class="nav-item-icon">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="1" width="12" height="14" rx="2"/><rect x="3" y="3" width="8" height="5" rx="1" stroke-width="0.8"/><circle cx="5" cy="10" r="1.5" stroke-width="0.8"/></svg>
+        </div>
+        <span class="nav-item-text">主机资产</span>
+      </div>
+      <div class="nav-item">
+        <div class="nav-item-icon">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 1h6l5 5v7a2 2 0 01-2 2H4a2 2 0 01-2-2V3a2 2 0 012-2z"/></svg>
+        </div>
+        <span class="nav-item-text">应用资产</span>
+      </div>
+
+      <div class="nav-group-title">巡检任务</div>
+      <div class="nav-item">
+        <div class="nav-item-icon">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="1" width="5.5" height="5.5" rx="1"/><rect x="9.5" y="1" width="5.5" height="5.5" rx="1"/><rect x="1" y="7.5" width="14" height="7.5" rx="1"/></svg>
+        </div>
+        <span class="nav-item-text">联合巡检</span>
+      </div>
+
+      <div class="nav-group-title">系统配置</div>
+      <div class="nav-item">
+        <div class="nav-item-icon">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1"><circle cx="8" cy="8" r="3" stroke-width="1.2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>
+        </div>
+        <span class="nav-item-text">平台设置</span>
+      </div>
+    </div>
+
+    <div class="nav-collapse">
+      <svg viewBox="0 0 16 16" fill="none" stroke="#6D7585" stroke-width="1.5"><path d="M10 3L5 8L10 13"/></svg>
+    </div>
+  </nav>
+
+  <!-- ====== MAIN ====== -->
+  <main class="main">
+    <!-- Breadcrumb -->
+    <div class="top-bar">
+      <div class="breadcrumb">
+        <svg viewBox="0 0 16 16" fill="#6D7585"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        <span class="link">资产管理</span>
+        <span class="sep">/</span>
+        <span class="link">主机资产</span>
+        <span class="sep">/</span>
+        <span class="current">Web-Gateway-FW-02</span>
+      </div>
+      <div class="top-bar-actions">
+        <button class="top-bar-btn">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 8h12M8 2v12"/></svg>
+          加入巡检
+        </button>
+        <button class="top-bar-btn primary">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M13.5 2.5l-8 8L3 8"/><path d="M2 8h2.5"/></svg>
+          发起扫描
+        </button>
+        <button class="top-bar-btn danger">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 4h10M6 4V2.5h4V4M5 4v8.5h6V4"/><path d="M7 7v4M9 7v4"/></svg>
+          移除资产
+        </button>
+      </div>
+    </div>
+
+    <!-- Asset Header Card -->
+    <div class="asset-header">
+      <div class="asset-header-top">
+        <div class="asset-icon">
+          <svg viewBox="0 0 24 24" stroke-width="1.5"><rect x="3" y="3" width="18" height="14" rx="2"/><line x1="3" y1="20" x2="21" y2="20"/><circle cx="8" cy="13" r="1.2" fill="currentColor" stroke="none"/><rect x="6" y="6" width="8" height="2" rx="0.5" fill="currentColor" stroke="none"/></svg>
+        </div>
+        <div class="asset-header-info">
+          <div class="asset-name-row">
+            <span class="asset-name">Web-Gateway-FW-02</span>
+            <span class="asset-status-tag online"><span class="status-dot-sm green"></span> 在线</span>
+          </div>
+          <div class="asset-meta-row">
+            <span class="asset-meta-item">
+              <svg viewBox="0 0 16 16" stroke-width="1.2"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 8a2.5 2.5 0 015 0" fill="none"/></svg>
+              <span class="label">IP:</span>
+              <span class="value">10.0.12.47</span>
+            </span>
+            <span class="asset-meta-item">
+              <svg viewBox="0 0 16 16" stroke-width="1.2"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M5 7h6M5 10h3"/></svg>
+              <span class="label">操作系统:</span>
+              <span class="value">CentOS 7.9</span>
+            </span>
+            <span class="asset-meta-item">
+              <svg viewBox="0 0 16 16" stroke-width="1.2"><path d="M3 1h6l5 5v7a2 2 0 01-2 2H4a2 2 0 01-2-2V3a2 2 0 012-2z"/></svg>
+              <span class="label">资产组:</span>
+              <span class="value">生产网-Web集群</span>
+            </span>
+            <span class="asset-meta-item">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8.5L10.5 10"/></svg>
+              <span class="label">最近扫描:</span>
+              <span class="value">2026-05-06 02:15:00</span>
+            </span>
+            <span class="asset-meta-item">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M7 5v4l3 2"/></svg>
+              <span class="label">接入时间:</span>
+              <span class="value">2025-11-18 09:30:00</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <span class="kpi-label">漏洞总数</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value" style="color: var(--color-danger);">17</span>
+          </div>
+        </div>
+        <div class="kpi-icon red">
+          <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M12 2L3 7v6c0 5.25 3.75 10.15 9 11.25 5.25-1.1 9-6 9-11.25V7l-9-5z"/><path d="M12 8v4M12 16h.01"/></svg>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <span class="kpi-label">未处置告警</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value" style="color: var(--color-warning);">6</span>
+          </div>
+        </div>
+        <div class="kpi-icon orange">
+          <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M12 2a7 7 0 017 7c0 3-1.5 5-3 6.5V18a1 1 0 01-1 1H9a1 1 0 01-1-1v-2.5C6.5 14 5 12 5 9a7 7 0 017-7z"/><path d="M9 21h6"/></svg>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <span class="kpi-label">安全基线</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value">82%</span>
+          </div>
+        </div>
+        <div class="kpi-icon blue">
+          <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <span class="kpi-label">关联攻击事件</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value">3</span>
+          </div>
+        </div>
+        <div class="kpi-icon green">
+          <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M12 2L13.5 8.5L20 8.5L14.75 12.5L16.75 19L12 15.25L7.25 19L9.25 12.5L4 8.5L10.5 8.5Z"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dual Section: Asset Info + Security Score -->
+    <div class="dual-section">
+      <!-- Left: Basic Info -->
+      <div class="info-card">
+        <div class="info-card-header">
+          <span class="info-card-title">基本信息</span>
+          <span class="info-card-action">编辑</span>
+        </div>
+        <div class="info-card-body">
+          <div class="dl-grid">
+            <span class="dt">主机名</span>
+            <span class="dd">web-gateway-fw-02</span>
+            <span class="dt">IP 地址</span>
+            <span class="dd">10.0.12.47</span>
+            <span class="dt">MAC 地址</span>
+            <span class="dd">00:1A:2B:3C:4D:5E</span>
+            <span class="dt">操作系统</span>
+            <span class="dd">CentOS Linux 7.9.2009</span>
+            <span class="dt">内核版本</span>
+            <span class="dd">3.10.0-1160.el7.x86_64</span>
+            <span class="dt">资产类型</span>
+            <span class="dd"><span class="tag neutral">服务器</span></span>
+            <span class="dt">资产重要性</span>
+            <span class="dd"><span class="tag high">核心资产</span></span>
+            <span class="dt">负责人</span>
+            <span class="dd">张明 (zhangming@qax.com)</span>
+            <span class="dt">所属部门</span>
+            <span class="dd">基础架构部 / 网络安全组</span>
+            <span class="dt">资产组</span>
+            <span class="dd">生产网-Web集群</span>
+            <span class="dt">开放端口</span>
+            <span class="dd">22, 80, 443, 8080, 8443</span>
+            <span class="dt">标签</span>
+            <span class="dd">
+              <span class="tag info">Web服务</span>
+              <span class="tag info">防火墙</span>
+              <span class="tag neutral">Linux</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Security Posture -->
+      <div class="info-card">
+        <div class="info-card-header">
+          <span class="info-card-title">安全态势</span>
+          <span class="info-card-action">查看报告 ></span>
+        </div>
+        <div class="info-card-body">
+          <div class="score-ring-container">
+            <div class="score-ring">
+              <svg viewBox="0 0 100 100">
+                <circle class="score-ring-bg" cx="50" cy="50" r="42"/>
+                <circle class="score-ring-fill warn" cx="50" cy="50" r="42"
+                  stroke-dasharray="264" stroke-dashoffset="74"/>
+              </svg>
+              <div class="score-ring-text">
+                <span class="score-number">72</span>
+                <span class="score-label">安全评分</span>
+              </div>
+            </div>
+            <div class="score-details">
+              <div class="score-item">
+                <span class="score-item-dot" style="background: var(--color-threat-critical);"></span>
+                <span class="score-item-label">严重漏洞</span>
+                <span class="score-item-value" style="color: var(--color-threat-critical);">2</span>
+              </div>
+              <div class="score-item">
+                <span class="score-item-dot" style="background: var(--color-threat-high);"></span>
+                <span class="score-item-label">高危漏洞</span>
+                <span class="score-item-value" style="color: var(--color-threat-high);">5</span>
+              </div>
+              <div class="score-item">
+                <span class="score-item-dot" style="background: var(--color-threat-medium);"></span>
+                <span class="score-item-label">中危漏洞</span>
+                <span class="score-item-value" style="color: var(--color-threat-medium);">7</span>
+              </div>
+              <div class="score-item">
+                <span class="score-item-dot" style="background: var(--color-threat-low);"></span>
+                <span class="score-item-label">低危漏洞</span>
+                <span class="score-item-value" style="color: #9A7B00;">3</span>
+              </div>
+              <div class="score-item">
+                <span class="score-item-dot" style="background: var(--color-success);"></span>
+                <span class="score-item-label">基线合规率</span>
+                <span class="score-item-value" style="color: var(--color-success);">82%</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: var(--spacing-loose); border-top: 1px solid var(--color-border-secondary); padding-top: var(--spacing-loose);">
+            <div style="font-size: 12px; font-weight: 700; color: var(--color-text-secondary); margin-bottom: var(--spacing-standard);">TOP 漏洞</div>
+            <div class="vuln-list">
+              <div class="vuln-item">
+                <span class="tag critical" style="flex-shrink:0;">严重</span>
+                <span class="vuln-name">OpenSSH 远程代码执行漏洞 (CVE-2024-6387)</span>
+                <span class="vuln-cve">CVE-2024-6387</span>
+              </div>
+              <div class="vuln-item">
+                <span class="tag critical" style="flex-shrink:0;">严重</span>
+                <span class="vuln-name">Apache Log4j2 远程代码执行 (CVE-2021-44228)</span>
+                <span class="vuln-cve">CVE-2021-44228</span>
+              </div>
+              <div class="vuln-item">
+                <span class="tag high" style="flex-shrink:0;">高危</span>
+                <span class="vuln-name">Nginx 缓冲区溢出漏洞 (CVE-2022-41741)</span>
+                <span class="vuln-cve">CVE-2022-41741</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table: Related Alerts -->
+    <div class="table-section">
+      <div class="table-header-row">
+        <span class="table-header-title">关联告警</span>
+        <div class="table-header-toolbar">
+          <div class="table-header-left">
+            <button class="table-action-btn">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 3v10M3 8h10"/></svg>
+              批量处置
+            </button>
+          </div>
+          <div class="table-header-right">
+            <select class="filter-select">
+              <option>全部等级</option>
+              <option>严重</option>
+              <option>高危</option>
+              <option>中危</option>
+              <option>低危</option>
+            </select>
+            <select class="filter-select">
+              <option>全部状态</option>
+              <option>待处置</option>
+              <option>处置中</option>
+              <option>已处置</option>
+            </select>
+            <input class="filter-input" type="text" placeholder="搜索告警名称…">
+          </div>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:80px">告警ID</th>
+              <th style="width:100px"><span class="th-sort">威胁等级 <svg viewBox="0 0 14 14"><path d="M4 5l3-3 3 3" fill="#6D7585"/><path d="M4 9l3 3 3-3" fill="#6D7585"/></svg></span></th>
+              <th>告警名称</th>
+              <th style="width:130px"><span class="th-sort">检出时间 <svg viewBox="0 0 14 14"><path d="M4 5l3-3 3 3" fill="#6D7585"/><path d="M4 9l3 3 3-3" fill="#6D7585"/></svg></span></th>
+              <th style="width:96px">处置状态</th>
+              <th style="width:100px">关联漏洞</th>
+              <th style="width:72px">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="color: var(--color-text-tertiary);">#10401</td>
+              <td><span class="tag critical"><span class="status-dot critical" style="width:6px;height:6px;"></span> 严重</span></td>
+              <td>检测到针对 8080 端口的目录穿越攻击</td>
+              <td>2026-05-06 08:45</td>
+              <td><span class="status-badge"><span class="status-dot running"></span> 处置中</span></td>
+              <td><span class="tag neutral" style="font-size:11px;">CVE-2024-6387</span></td>
+              <td><a class="action-link">详情</a></td>
+            </tr>
+            <tr>
+              <td style="color: var(--color-text-tertiary);">#10395</td>
+              <td><span class="tag critical"><span class="status-dot critical" style="width:6px;height:6px;"></span> 严重</span></td>
+              <td>SQL 注入攻击尝试 (疑似渗透工具行为)</td>
+              <td>2026-05-06 06:30</td>
+              <td><span class="status-badge"><span class="status-dot pending"></span> 待处置</span></td>
+              <td><span class="tag neutral" style="font-size:11px;">CVE-2021-44228</span></td>
+              <td><a class="action-link">详情</a></td>
+            </tr>
+            <tr>
+              <td style="color: var(--color-text-tertiary);">#10388</td>
+              <td><span class="tag high"><span class="status-dot high" style="width:6px;height:6px;"></span> 高危</span></td>
+              <td>异常 DNS 隧道通信检测</td>
+              <td>2026-05-06 04:02</td>
+              <td><span class="status-badge"><span class="status-dot running"></span> 处置中</span></td>
+              <td><span class="tag neutral" style="font-size:11px;">CVE-2022-41741</span></td>
+              <td><a class="action-link">详情</a></td>
+            </tr>
+            <tr>
+              <td style="color: var(--color-text-tertiary);">#10376</td>
+              <td><span class="tag medium"><span class="status-dot medium" style="width:6px;height:6px;"></span> 中危</span></td>
+              <td>SSH 暴力破解尝试 — 多源 IP</td>
+              <td>2026-05-05 22:18</td>
+              <td><span class="status-badge"><span class="status-dot done"></span> 已处置</span></td>
+              <td>—</td>
+              <td><a class="action-link">详情</a></td>
+            </tr>
+            <tr>
+              <td style="color: var(--color-text-tertiary);">#10362</td>
+              <td><span class="tag high"><span class="status-dot high" style="width:6px;height:6px;"></span> 高危</span></td>
+              <td>Webshell 文件上传检测 (eval.php)</td>
+              <td>2026-05-05 19:45</td>
+              <td><span class="status-badge"><span class="status-dot done"></span> 已处置</span></td>
+              <td>—</td>
+              <td><a class="action-link">详情</a></td>
+            </tr>
+            <tr>
+              <td style="color: var(--color-text-tertiary);">#10345</td>
+              <td><span class="tag low"><span class="status-dot low" style="width:6px;height:6px;"></span> 低危</span></td>
+              <td>TLS 证书即将过期 (剩余7天)</td>
+              <td>2026-05-05 14:10</td>
+              <td><span class="status-badge"><span class="status-dot pending"></span> 待处置</span></td>
+              <td>—</td>
+              <td><a class="action-link">详情</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <div class="page-btn disabled">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7.5 2L3.5 6L7.5 10"/></svg>
+        </div>
+        <div class="page-btn active">1</div>
+        <div class="page-btn">2</div>
+        <div class="page-btn">3</div>
+        <div class="page-ellipsis">···</div>
+        <div class="page-btn">8</div>
+        <div class="page-btn">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 2L8.5 6L4.5 10"/></svg>
+        </div>
+        <div class="page-goto">
+          前往 <input type="text" value="">
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Nav click
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+
+    // Pagination click
+    document.querySelectorAll('.page-btn:not(.disabled)').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.page-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    // Edit button in info card
+    document.querySelectorAll('.info-card-action').forEach(el => {
+      el.addEventListener('click', () => {
+        alert('编辑功能待实现');
+      });
+    });
+  </script>
+</body>
+</html>
