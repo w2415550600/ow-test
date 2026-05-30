@@ -7,7 +7,7 @@
   --text-main: #000000;
   --text-inverse: #ffffff;
   --text-gray: #9c9c9c;
-  --nav-height: 88px;
+  --nav-height: 64px;
   --container-max-width: 1840px;
   --container-padding: 40px;
 
@@ -96,135 +96,40 @@ a {
   padding-bottom: 40px;
 }
 
+/* 舞台区域 — 承载3D环形卡片组件 */
 .playground-stage {
-  min-height: 560px;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   overflow: visible;
   margin-top: -40px;
-  padding-bottom: 90px;
+  padding-bottom: 30px;
 }
 
-/* Stack 模式激活时，裁剪超出视口的卡片 */
-.playground-stage.stack-active {
-  overflow: hidden;
-  padding-bottom: 90px;
-}
-
-.playground-stage.stack-active #ring-container {
-  width: 100%;
-  max-width: 100%;
-}
-
+/* 3D环形卡片容器 — 增大高度防截断，向上偏移70px使上方文字可覆盖 */
 #ring-container {
-  position: relative;
-  position: relative;
-  width: 1033px;
-  /* design frame width */
-  height: 683px;
-  /* design frame height */
-  max-width: calc(100% - 80px);
+  width: 100%;
+  height: 900px;
+  max-width: 1200px;
   margin: 0 auto;
+  margin-top: -70px;
 }
 
-/* provide 3D perspective for ring items and allow container-level transform */
-#ring-container {
-  perspective: 1200px;
+/* 场景区域留白，防止卡片出场动画被裁切 */
+#ring-container .rc-scene {
+  height: calc(100% - 80px);
+  margin-top: 24px;
 }
 
-/* wrapper that holds items should be absolutely positioned so transforms don't affect layout */
-.ring-wrapper {
-  position: absolute;
-  inset: 0;
-  /* top:0; right:0; bottom:0; left:0 */
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-  pointer-events: auto;
-  /* allow mouse interactions */
+/* 数量指示器下移30px，远离核心视觉区域 */
+#ring-container .rc-info-panel {
+  bottom: -20px;
 }
 
-.ring-item {
-  width: 256px;
-  height: 256px;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform-style: preserve-3d;
-  transition: transform 0.25s ease;
-  cursor: pointer;
-  border-radius: 0;
-  overflow: hidden;
-  box-shadow: none;
-  background: transparent;
-}
-
-.ring-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.pg-modal {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  visibility: hidden;
-  opacity: 0;
-  z-index: 10000;
-}
-
-.pg-modal[aria-hidden="false"] {
-  visibility: visible;
-  opacity: 1
-}
-
-.pg-modal-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-}
-
-.pg-modal-content {
-  position: relative;
-  width: min(1100px, 92%);
-  background: #fff;
-  border-radius: 12px;
-  padding: 28px;
-  z-index: 10001;
-  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.5);
-}
-
-.pg-modal-body {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start
-}
-
-.pg-modal-body img {
-  width: 56%;
-  height: auto;
-  border-radius: 8px;
-  object-fit: cover
-}
-
-.pg-modal-desc {
-  width: 44%;
-}
-
-.pg-modal-close {
-  position: absolute;
-  right: 12px;
-  top: 8px;
-  background: transparent;
-  border: none;
-  font-size: 28px;
-  cursor: pointer
+/* 详情模式下容器自动扩展 */
+#ring-container.detail-mode {
+  min-height: 900px;
 }
 
 /* Playground page divider */
@@ -269,68 +174,9 @@ a {
   text-align: left
 }
 
-/* Mode switch buttons */
-.pg-mode-switch {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: 20px;
-  vertical-align: middle;
-}
-
-.pg-mode-btn {
-  background: none;
-  border: none;
-  font-family: inherit;
-  font-size: 14px;
-  color: var(--text-gray);
-  cursor: pointer;
-  padding: 2px 8px;
-  border-radius: 4px;
-  transition: color 0.3s ease, background-color 0.3s ease;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-}
-
-.pg-mode-btn:hover {
-  color: var(--text-main);
-}
-
-.pg-mode-btn.active {
-  color: var(--text-main);
-  background-color: rgba(0, 0, 0, 0.08);
-}
-
-.pg-mode-divider {
-  color: #d8d8d8;
-  font-size: 14px;
-  user-select: none;
-}
-
-/* Stack mode card styles */
-.ring-item.stack-mode {
-  transition: none !important;
-  /* GSAP handles all transforms */
-  border-radius: 0px !important;
-  overflow: visible !important;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-  background: #fff;
-}
-
-.ring-item.stack-mode img {
-  border-radius: 0px !important;
-  box-shadow: none;
-}
-
 @media (max-width: 900px) {
   #ring-container {
-    height: 360px;
-    max-width: 640px
-  }
-
-  .ring-item {
-    width: 160px;
-    height: 220px
+    height: 520px;
   }
 
   .pg-basic-info .pg-title {
@@ -691,19 +537,12 @@ body.page-about .section-divider {
   display: block;
 }
 
-/* Unicorn Studio WebGL 容器 */
-.unicorn-container {
+/* 人物照片 — 静态图片 */
+.about-portrait-img {
   width: 100%;
-  height: 1000px;
-  overflow: hidden;
-  position: relative;
-}
-
-/* 隐藏 Unicorn Studio 品牌按钮 */
-.unicorn-container iframe + a,
-.unicorn-container [data-us-project] + a,
-.unicorn-container a[href*="unicorn.studio"] {
-  display: none !important;
+  height: auto;
+  display: block;
+  border-radius: 0;
 }
 
 .about-lists {
@@ -726,6 +565,34 @@ body.page-about .section-divider {
   font-weight: 500;
 }
 
+/* Spell UI Special Text — 打乱解码动画 */
+.special-text {
+  display: inline-flex;
+  flex-wrap: wrap;
+}
+
+.special-char {
+  display: inline-block;
+  will-change: transform, opacity, filter;
+  font-variant-numeric: tabular-nums;
+}
+
+.special-char.decoded {
+  /* 解码完成后的状态 — 可添加额外视觉反馈 */
+}
+
+/* 正文打乱效果 — 无模糊无透明度，纯字符跳动 */
+.special-text-body {
+  display: inline-flex;
+  flex-wrap: wrap;
+}
+
+.special-text-body .special-char {
+  display: inline-block;
+  will-change: contents;
+  font-variant-numeric: tabular-nums;
+}
+
 .about-row-desc {
   font-size: 20px;
   line-height: 1.8;
@@ -735,19 +602,33 @@ body.page-about .section-divider {
 }
 
 /* ==================================
-   Footer
+   Footer — 空间嵌套感视差滚动效果
+   黑色背景层 100vh 作为蒙版裁剪容器
+   文字层嵌入内部，滚动时仅做80px微移形成强烈速度差
+   视觉效果：文字被黑色背景"带出来"，像嵌在水泥里
    ================================== */
 .footer {
   background-color: var(--footer-bg);
   color: var(--text-inverse);
-  padding: 80px 0;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;  /* 蒙版裁剪：文字超出黑色区域不可见 */
+}
+
+/* 内容层 — 视差滚动层，初始y偏移由GSAP控制 */
+.footer-content {
+  position: relative;
+  will-change: transform;
+  padding-top: 128px;
+  /* 顶部多留80px空间给文字层视差入场 */
+  padding-bottom: 32px;
 }
 
 .footer-top {
   display: flex;
   justify-content: space-between;
   font-size: 14px;
-  margin-bottom: 120px;
+  margin-bottom: 40px;
   color: #9c9c9c;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 17px;
@@ -766,8 +647,8 @@ body.page-about .section-divider {
 }
 
 .footer-giant {
-  font-size: 160px;
-  /* 固定 160px */
+  font-size: 140px;
+  /* 放大到140px */
   line-height: 1;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -957,4 +838,187 @@ body.page-about .section-divider {
 .page-detail .work-detail {
   margin-bottom: 259px;
   /* work detail到footer的间距 */
+}
+
+/* ==================================
+   Creative Work Grid Section
+   ================================== */
+.creative-work {
+  padding-top: 20px;
+  padding-bottom: 120px;
+}
+
+.cw-header {
+  margin-bottom: 40px;
+  padding-top: 17px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding-bottom: 17px;
+}
+
+.cw-title {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.cw-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 120px 10px;
+}
+
+.cw-item {
+  cursor: pointer;
+}
+
+.cw-img-wrap {
+  overflow: hidden;
+  background: #e8e8e8;
+}
+
+.cw-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cw-item:hover .cw-img-wrap img {
+  transform: scale(1.05);
+}
+
+.cw-badge {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  color: #8e8e8e;
+  line-height: 1;
+  margin-top: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 角标单个字符 — 打乱解码动画用 */
+.cw-badge-char {
+  display: inline-block;
+  will-change: contents;
+}
+
+/* 响应式：最大宽度限制，确保默认8列 */
+/* 最小宽度约120px，当容器不够宽时自动减少列数 */
+@media (max-width: 1400px) {
+  .cw-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 120px 10px;
+  }
+}
+
+@media (max-width: 900px) {
+  .cw-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 80px 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .cw-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 60px 8px;
+  }
+}
+
+/* ==================================
+   Creative Work Bottom Text Section
+   Sketch画板3精确还原：
+   - 标签列155px（960-805），正文列760px（1720-960）
+   - 整体915px宽，靠右定位，距页面右侧200px
+   - 所有文字14px，标签=#000 fontWeight=5，正文=#6e6e6e fontWeight=5
+   ================================== */
+
+/* 文字排版区域：整体距页面右侧200px固定位置 */
+.page-playground .cw-bottom.container {
+  padding-bottom: 120px;
+  padding-right: 200px !important;
+}
+
+.cw-bottom-row {
+  display: grid;
+  grid-template-columns: 155px 760px;
+  align-items: start;
+  padding: 0;
+  max-width: 915px;
+  margin-left: auto;
+}
+
+.cw-bottom-row + .cw-bottom-row {
+  padding-top: 80px;
+}
+
+.cw-bottom-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-main);
+  text-align: left;
+  padding-top: 3px;
+}
+
+.cw-bottom-text {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
+  color: #6e6e6e;
+  text-align: left;
+}
+
+.cw-bottom-cols {
+  display: grid;
+  grid-template-columns: 335px 335px;
+  gap: 90px;
+}
+
+.cw-bottom-cols p {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
+  color: #6e6e6e;
+}
+
+.cw-bottom-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.cw-list-item {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
+  color: #6e6e6e;
+  padding: 0;
+}
+
+.cw-list-item + .cw-list-item {
+  padding-top: 0;
+}
+
+@media (max-width: 1024px) {
+  .cw-bottom-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding-top: 32px;
+    max-width: none;
+    margin-left: 0;
+  }
+
+  .cw-bottom-label {
+    text-align: left;
+    padding-right: 0;
+  }
+
+  .cw-bottom-cols {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 }

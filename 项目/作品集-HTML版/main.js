@@ -3,6 +3,7 @@
  */
 
 document.addEventListener("DOMContentLoaded", () => {
+  try {
   // Fade-in page on load
   gsap.from('body', { opacity: 0, duration: 0.5, ease: 'power2.out' });
   // Register ScrollTrigger
@@ -160,6 +161,123 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ========================================
+  // 0.6 Special Text — Spell UI 字符打乱解码动画
+  //    效果：文字从随机字符快速跳动，逐字"解码"还原为正常文本
+  //    类似代码/黑客风格的随机切换 → 逐字锁定
+  //
+  //    两种模式：
+  //    .special-text      → 标题用：有模糊+透明度过渡（沉浸感）
+  //    .special-text-body → 正文用：无模糊无透明度（纯字符跳动）
+  // ========================================
+
+  // 随机字符池 — 中文用方块/符号感字符，英文用代码符号
+  const SCRAMBLE_POOL_LATIN = '!@#$%^&*<>{}[]|/\\~0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  const SCRAMBLE_POOL_CJK = '█▓▒░╔╗╚╝═║╬╠╣╦╩▀▄⌬⏣⎔◇◆□■△▽⊕⊗⟟⏢⎳◈▣▧▦▩▪▫';
+
+  function getRandomChar(originalChar) {
+    const isCJK = /[\u4e00-\u9fff\u3400-\u4dbf]/.test(originalChar);
+    const pool = isCJK ? SCRAMBLE_POOL_CJK : SCRAMBLE_POOL_LATIN;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  // 通用的打乱解码初始化函数
+  function initScrambleText(el, options = {}) {
+    const {
+      useBlur = true,        // 是否使用模糊效果
+      scrambleDuration = 600, // 每个字的打乱持续时间 (ms)
+      scrambleInterval = 35,  // 每次切换间隔 (ms)
+      staggerDelay = 70       // 逐字错开延迟 (ms)
+    } = options;
+
+    // 从 data-text 获取原始文本（避免 HTML 实体解码问题）
+    const originalText = el.getAttribute('data-text') || el.textContent;
+
+    // 拆分为单个字符的 span
+    const chars = [];
+    el.innerHTML = '';
+
+    for (let i = 0; i < originalText.length; i++) {
+      const ch = originalText[i];
+      const span = document.createElement('span');
+      span.className = 'special-char';
+      span.textContent = ch;
+      span.dataset.original = ch;
+      el.appendChild(span);
+      chars.push({
+        span: span,
+        original: ch,
+        isSpace: /\s/.test(ch)
+      });
+    }
+
+    // 初始状态：所有非空格字符显示为随机字符
+    chars.forEach(c => {
+      if (!c.isSpace) {
+        c.span.textContent = getRandomChar(c.original);
+        if (useBlur) {
+          // 标题模式：随机字符 + 微弱模糊 + 低透明度
+          gsap.set(c.span, {
+            opacity: 0.4,
+            filter: 'blur(2px)'
+          });
+        }
+        // 正文模式（useBlur=false）：随机字符但保持完全不透明、无模糊
+      }
+    });
+
+    // 滚动触发解码动画 — start 设为 'top 100%' 确保元素刚进入视口就触发
+    ScrollTrigger.create({
+      trigger: el,
+      start: 'top 100%',
+      onEnter: () => {
+        chars.forEach((c, idx) => {
+          if (c.isSpace) return;
+
+          // 使用 setTimeout 实现逐字错开启动
+          setTimeout(() => {
+            let elapsed = 0;
+
+            // 打乱阶段：快速切换随机字符
+            const timer = setInterval(() => {
+              elapsed += scrambleInterval;
+
+              if (elapsed >= scrambleDuration) {
+                clearInterval(timer);
+                // 解码完成 — 显示正确字符
+                c.span.textContent = c.original;
+                c.span.classList.add('decoded');
+                if (useBlur) {
+                  // 标题模式：从模糊低透明度过渡到清晰
+                  gsap.to(c.span, {
+                    opacity: 1,
+                    filter: 'blur(0px)',
+                    duration: 0.3,
+                    ease: 'power2.out'
+                  });
+                }
+              } else {
+                // 继续打乱 — 随机切换字符
+                c.span.textContent = getRandomChar(c.original);
+              }
+            }, scrambleInterval);
+          }, idx * staggerDelay);
+        });
+      },
+      once: true
+    });
+  }
+
+  // 初始化标题打乱效果（有模糊+透明度）
+  document.querySelectorAll('.special-text').forEach(el => {
+    initScrambleText(el, { useBlur: true });
+  });
+
+  // 初始化正文打乱效果（无模糊、无透明度变化）
+  document.querySelectorAll('.special-text-body').forEach(el => {
+    initScrambleText(el, { useBlur: false, scrambleDuration: 400, staggerDelay: 30 });
+  });
+
+  // ========================================
   // 1. 滚动淡入动画
   // ========================================
   const fadeUpElements = document.querySelectorAll('.g-fade-up');
@@ -293,6 +411,43 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ========================================
+  // 1.8 Footer 空间嵌套感视差滚动效果
+  try {
+  //    黑色背景层 100vh 作为蒙版裁剪容器，1:1 正常滚动
+  //    文字层在"世界绝对位置"中几乎不动，仅向上移动320px到结束位置
+  //    背景像蒙版一样滑过文字，文字被overflow:hidden裁剪
+  //    形成强烈速度差：背景大步流星，文字像嵌在水泥里
+  //
+  //    数学原理：
+  //    背景滚动 100vh，文字在视口中只移 320px
+  //    → 文字相对footer需反向补偿 (100vh - 320px)
+  //    → 初始 y = -(100vh - 320)，结束时 y = 0（自然位置）
+  // ========================================
+  const footerEl = document.querySelector('.footer');
+  const footerContent = document.querySelector('.footer-content');
+
+  if (footerEl && footerContent) {
+    // 文字层从"世界绝对位置"开始，初始在footer可见区域上方（被裁剪不可见）
+    // 滚动过程中逐渐进入黑色蒙版的可见区域，到结束时到达自然位置
+    // 注意：fromTo的from值必须是即时计算值，不能用函数（GSAP 3.12的from不支持函数值）
+    const footerStartY = -(window.innerHeight - 320);  // 初始偏移：视口高度减去320px位移
+    gsap.fromTo(footerContent,
+      { y: footerStartY },                         // 初始：在footer可见区上方，被裁剪（位移320px）
+      {
+        y: 0,                                      // 结束：到达自然位置
+        ease: 'none',
+        scrollTrigger: {
+          trigger: footerEl,
+          start: 'top bottom',                    // footer顶部到达视口底部时开始
+          end: 'top top',                         // footer顶部到达视口顶部时结束
+          scrub: true,                            // 与滚动同步
+          invalidateOnRefresh: true,              // 窗口resize时重新计算
+        }
+      }
+    );
+  }
+
+  // ========================================
   // 2. Footer 悬停动画
   // ========================================
   const footerLinks = document.querySelectorAll('.footer-link');
@@ -319,6 +474,10 @@ document.addEventListener("DOMContentLoaded", () => {
     link.addEventListener('mouseenter', () => tl.play());
     link.addEventListener('mouseleave', () => tl.reverse());
   });
+
+  } catch (e) {
+    console.warn('[main.js] Footer section error:', e);
+  }
 
   // ========================================
   // Page Transitions - Grid/Stripe Fragment Transition (GSAP)
@@ -548,11 +707,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // ========================================
   // 3. About 页面 Cursor-Tracking Image Preview
   //    使用双图层交替淡入淡出实现丝滑切换
+  //    ⚠️ 已暂时禁用 — 人物照片替换为静态图片
   // ========================================
+  const ENABLE_ABOUT_PREVIEW = true; // 设为 false 可禁用
+
   const aboutPreview = document.getElementById('about-preview');
   const aboutRows = document.querySelectorAll('.about-row');
 
-  if (aboutPreview && aboutRows.length > 0) {
+  if (ENABLE_ABOUT_PREVIEW && aboutPreview && aboutRows.length > 0) {
     const layerA = document.getElementById('layer-a');
     const layerB = document.getElementById('layer-b');
     const images = [
@@ -651,5 +813,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       });
     });
+  }
+
+  } catch (e) {
+    // 捕获footer视差或其它动画的运行时错误，防止脚本中断
+    console.warn('Animation section error:', e);
   }
 });
