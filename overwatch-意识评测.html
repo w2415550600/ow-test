@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>守望先锋国服意识评测 - 你是什么段位？</title>
+    <meta name="description" content="20道高能题目测试你的守望先锋游戏意识，国服500强老玩家出品，测测你是活区拉完了神厨还是国服最后一块牌面！">
+    <meta property="og:title" content="守望先锋国服意识评测 - 你是什么段位？">
+    <meta property="og:description" content="20道高能题目测试你的守望先锋游戏意识，国服500强老玩家出品，测测你是活区拉完了神厨还是国服最后一块牌面！">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='630'%3E%3Crect fill='%23f99e1a' width='1200' height='630'/%3E%3Ctext x='600' y='315' font-family='Arial' font-size='48' fill='white' text-anchor='middle'%3E守望先锋国服意识评测%3C/text%3E%3C/svg%3E">
+    <meta name="twitter:card" content="summary_large_image">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        #app {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            position: relative;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            box-shadow: 0 0 40px rgba(0,0,0,0.1);
+        }
+        #starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .content {
+            position: relative;
+            z-index: 10;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .option-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        .option-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .option-card:active {
+            transform: scale(0.98);
+        }
+        .option-card.correct {
+            border-color: #22c55e !important;
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%) !important;
+        }
+        .option-card.wrong {
+            border-color: #ef4444 !important;
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%) !important;
+        }
+        .badge-tank { background: linear-gradient(135deg, #00ccff 0%, #00a8cc 100%); }
+        .badge-dps { background: linear-gradient(135deg, #ff4500 0%, #cc3700 100%); }
+        .badge-support { background: linear-gradient(135deg, #33cc66 0%, #28a845 100%); }
+        .progress-bar {
+            background: linear-gradient(90deg, #f99e1a 0%, #ffb84d 100%);
+            transition: width 0.5s ease;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #f99e1a 0%, #ff851a 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(249, 158, 26, 0.4);
+        }
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+        .explanation-panel {
+            animation: slideUp 0.4s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .pulse-animation {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+        .result-title {
+            background: linear-gradient(135deg, #f99e1a 0%, #ff6b35 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .radar-container {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            margin: 0 auto;
+        }
+        #radarCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .poster-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .poster-overlay.active {
+            display: flex;
+        }
+        .poster-img {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .close-poster {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="starfield"></canvas>
+    
+    <div id="app">
+        <div class="content">
+            <!-- START 页面 -->
+            <div id="startPage" class="flex flex-col items-center justify-center min-h-screen py-8">
+                <canvas id="logoCanvas" width="200" height="200" class="mb-8"></canvas>
+                <h1 class="text-3xl font-bold text-center mb-4" style="color: #1e293b;">守望先锋国服意识评测</h1>
+                <p class="text-gray-600 text-center mb-8 px-4">20道高能题目，测测你的游戏意识到底在哪个段位</p>
+                <div class="flex gap-4 mb-8">
+                    <div class="text-center px-4 py-2 rounded-lg badge-tank text-white">
+                        <div class="text-xs opacity-80">重装位</div>
+                        <div class="font-bold">5题</div>
+                    </div>
+                    <div class="text-center px-4 py-2 rounded-lg badge-dps text-white">
+                        <div class="text-xs opacity-80">输出位</div>
+                        <div class="font-bold">7题</div>
+                    </div>
+                    <div class="text-center px-4 py-2 rounded-lg badge-support text-white">
+                        <div class="text-xs opacity-80">辅助位</div>
+                        <div class="font-bold">8题</div>
+                    </div>
+                </div>
+                <button id="startBtn" class="btn-primary text-white font-bold py-4 px-12 rounded-full text-lg pulse-animation">
+                    开始评测
+                </button>
+                <p class="text-gray-400 text-sm mt-6">国服500强老玩家出品</p>
+            </div>
+
+            <!-- QUESTION 页面 -->
+            <div id="questionPage" class="hidden min-h-screen py-6">
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <span id="progressText" class="text-sm text-gray-600">1 / 20</span>
+                        <div id="positionBadge" class="px-3 py-1 rounded-full text-white text-xs font-bold badge-tank">重装位</div>
+                    </div>
+                    <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div id="progressBar" class="progress-bar h-full rounded-full" style="width: 5%"></div>
+                    </div>
+                </div>
+
+                <div id="questionCard" class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+                    <h3 id="questionTitle" class="text-base font-bold mb-3" style="color: #f99e1a;"></h3>
+                    <h2 id="questionText" class="text-lg font-medium leading-relaxed" style="color: #1e293b;"></h2>
+                </div>
+
+                <div id="optionsContainer" class="space-y-3">
+                    <!-- 选项将通过 JS 动态生成 -->
+                </div>
+
+                <div id="explanationPanel" class="hidden explanation-panel mt-6 bg-white rounded-2xl p-6 shadow-lg border-l-4" style="border-color: #f99e1a;">
+                    <h3 class="font-bold mb-3" style="color: #f99e1a;">【局势战术推演深度解析】</h3>
+                    <p id="explanationText" class="text-gray-700 leading-relaxed text-sm"></p>
+                    <button id="nextBtn" class="btn-primary text-white font-bold py-3 px-8 rounded-full mt-4 w-full">
+                        下一题
+                    </button>
+                </div>
+            </div>
+
+            <!-- RESULTS 页面 -->
+            <div id="resultsPage" class="hidden min-h-screen py-6">
+                <div class="text-center mb-6">
+                    <h1 class="text-2xl font-bold result-title mb-2">评测报告</h1>
+                    <p id="scoreText" class="text-4xl font-bold" style="color: #f99e1a;">15 / 20</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+                    <div id="rankTitle" class="text-2xl font-bold text-center mb-2" style="color: #f99e1a;">带飞大爹</div>
+                    <div id="rankSubtitle" class="text-sm text-gray-500 text-center mb-4">队友心里的白月光</div>
+                    <p id="rankDescription" class="text-gray-700 leading-relaxed text-sm text-center"></p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+                    <h3 class="font-bold text-center mb-4" style="color: #1e293b;">意识属性雷达</h3>
+                    <div class="radar-container">
+                        <canvas id="radarCanvas" width="280" height="280"></canvas>
+                    </div>
+                    <div class="flex justify-around mt-4 text-sm">
+                        <div class="text-center">
+                            <div class="font-bold" style="color: #00ccff;">T 空间掌控</div>
+                            <div id="tankScore" class="text-gray-600">71%</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="font-bold" style="color: #ff4500;">C 集火收割</div>
+                            <div id="dpsScore" class="text-gray-600">86%</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="font-bold" style="color: #33cc66;">S 协同保活</div>
+                            <div id="supportScore" class="text-gray-600">67%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <button id="restartBtn" class="btn-primary text-white font-bold py-3 px-8 rounded-full w-full">
+                        再测一次
+                    </button>
+                    <button id="generatePosterBtn" class="bg-white border-2 border-gray-200 text-gray-700 font-bold py-3 px-8 rounded-full w-full hover:bg-gray-50 transition">
+                        生成分享海报
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="posterOverlay" class="poster-overlay">
+        <button class="close-poster" id="closePoster">×</button>
+        <img id="posterImg" class="poster-img" alt="分享海报">
+        <p class="text-white text-center mt-4 text-sm">长按图片保存到相册</p>
+    </div>
+
+    <script>
+        // ==================== 题库数据 ====================
+        const questions = [
+            // 问题 1：重装·对位机制克制
+            {
+                type: 'tank',
+                title: '问题 1：重装·对位机制克制',
+                question: '敌方 D.Va 在场上极其活跃，机动性拉满，且【防御矩阵】精准拦截了己方黑百合和卡西迪的所有关键射击。作为我方坦克，你该换出哪个英雄进行"机制上的硬克制"？',
+                options: [
+                    '换查莉娅（毛妹），其粒子束（激光）可以直接穿透 D.Va 的防御矩阵，强行融化其机甲。',
+                    '换路霸，尝试在掩体后使用链钩穿过其矩阵盲区，强行将其拉入己方阵容中击杀。',
+                    '换奥丽莎，利用标枪在正面强推和阻断大招，在正面战场建立强盾阵线进行正面消耗。',
+                    '换莱因哈特（大锤），在正面利用护盾和烈焰打击，与其进行正面资源与盾牌强行博弈。'
+                ],
+                correct: 0,
+                explanation: '毛妹的粒子束属于能量轨道武器，D.Va 的防御矩阵（DM）完全无法拦截。这是守望先锋中最经典、也是最好使的重装对位硬克制关系之一。'
+            },
+            // 问题 2：输出·源氏切入时机
+            {
+                type: 'dps',
+                title: '问题 2：输出·源氏切入时机',
+                question: '占领要点绿洲城。敌方安娜刚交了生化手雷（砸向其前排），对方卡西迪正在高台拉边线企图寻找战术大招角度，你手握大招该怎么做？',
+                options: [
+                    '拔刀直接切入高台卡西迪，利用高伤害机动性，强行封锁卡西迪后续战术大招的释放空间。',
+                    '观察到对方主力治疗交出保命技能，直接闪进点内配合重装集火敌方残血的坦克。',
+                    '观察卡西迪站位，利用坦克吸引火力瞬移切入，斩杀无瓶安娜刷新 S 再斩卡西迪。',
+                    '暂时放弃切入，全盘转为贴身防守，随时准备用闪光弹/飞镖打断来切安娜的敌方刺客。'
+                ],
+                correct: 2,
+                explanation: '安娜交瓶是绝对集火信号。卡西迪开大有延迟且视野受限，在有前排吸引时，借空档斩杀没瓶子的辅助是最优选。'
+            },
+            // 问题 3：辅助·巴蒂斯特保人
+            {
+                type: 'support',
+                title: '问题 3：辅助·巴蒂斯特保人',
+                question: '漓江塔激战。敌方源氏拔刀突向己方无位移的禅雅塔。你手里有【锁血灯】和【愈合冲击】，如何保人？',
+                options: [
+                    '听到他拔刀音效的瞬间，立刻在自己脚下扔出锁血灯保护全队。',
+                    '等源氏砍出第一刀、禅雅塔血量过半时扔灯抬血，利用灯的无敌反打。',
+                    '不扔灯，直接开启大招【增幅矩阵】试图在伤害制造前秒杀源氏。',
+                    '预判禅雅塔无法存活，利用被动起跳拉开到高台安全区域，寻找机会进行远程补刀。'
+                ],
+                correct: 1,
+                explanation: '提前扔灯会让有经验的源氏直接转火砍灯。卡准血线交灯并开启范围群奶，能拉长禅雅塔的生存期并逼退源氏。'
+            },
+            // 问题 4：重装·阵容协同变阵
+            {
+                type: 'tank',
+                title: '问题 4：重装·阵容协同变阵',
+                question: '敌方拿出"黑影+末日铁拳+源氏"的三放狗快攻阵容，己方后排辅助安娜和禅雅塔频频暴毙。此时最合理的坦克换人抉择是？',
+                options: [
+                    '换破坏球，通过高机动性骚扰敌方后排，打乱其三刺客阵容的进攻节奏。',
+                    '换奥丽莎，在正面利用强硬身躯配合强标枪打断铁拳、黑影，强行进行正面战线换血。',
+                    '换 D.Va，利用高机动性的【防御矩阵】贴身保护己方后排，并在狗位交完位移后配合集火收割。',
+                    '换西格玛，在己方后排放置实验屏障切断敌方突脸刺客的奶线，并在后排进行阵地防御。'
+                ],
+                correct: 2,
+                explanation: '面对高协同的放狗突脸，重装必须承担保护后排的职责。D.Va 的矩阵是克制弹道爆发（如源氏镖、黑影扫射）并为辅助争取拉扯和治疗空间的终极手段。'
+            },
+            // 问题 5：输出·索杰恩残局选择
+            {
+                type: 'dps',
+                title: '问题 5：输出·索杰恩残局选择',
+                question: '努巴尼 A 点残局，双方坦克皆战亡。敌方猎空骚扰己方安娜，敌方法拉吃着蓝线在天空狂轰，你应该？',
+                options: [
+                    '升空或在地面使用电磁炮右键，全力对空，尝试在天使蓝线牵住法拉时强行点杀法拉。',
+                    '利用滑铲跨越战场，切入敌方没有保护的另一个后排辅助，进行对换人头。',
+                    '回防保护安娜，右键击退或协同击杀猎空，保障治疗后再利用掩体反空。',
+                    '站在开阔地利用滑铲身法拉扯法拉的火箭弹道，在正面进行火力对点。'
+                ],
+                correct: 2,
+                explanation: '后排安娜死掉，队伍便失去了唯一的续航，你也无法活着点死法拉。先清理近身的威胁（猎空），保住团队发动机是根本。'
+            },
+            // 问题 6：辅助·雾子铃铛时机
+            {
+                type: 'support',
+                title: '问题 6：辅助·雾子铃铛时机',
+                question: '暴雪乐园防守。敌方渣客女王开启大招狂轰乱炸命中了你和另外两名队友。此时己方主 T 也被大锤撞倒，【铃铛】给谁？',
+                options: [
+                    '立即扔在脚下，解除自己和两名输出的禁疗并持续回血。',
+                    '穿墙把铃铛丢给被撞倒的主 T，保护他不被集火补伤害。',
+                    '暂时保留铃铛，自己交瞬步拉开距离到安全位置，准备进行后续的拉扯和分批治疗。',
+                    '直接大招【狐狸奔袭】对撞，用高额移速拉扯逃离女王禁疗伤害。'
+                ],
+                correct: 0,
+                explanation: '女王大招的致命处在于高额 DOT 流血和全队禁疗。净化自己和队友的禁疗状态，保住三人战力，是阻止敌方滚雪球的关键。'
+            },
+            // 问题 7：输出·狙击手反制
+            {
+                type: 'dps',
+                title: '问题 7：输出·狙击手反制',
+                question: '敌方黑百合在直布罗陀 A 点高台构筑了极其恐怖的"死亡禁区"，己方露头就被秒。作为 DPS，能够最有效进行单兵克制并逼迫黑百合换人的选择是？',
+                options: [
+                    '换黑影（Sombra），利用隐身摸上高台，通过偷袭和黑入强行破坏其瞄准节奏，定点抹杀。',
+                    '换卡西迪，躲在己方坦克盾后面，尝试在地面和高台百合拼枪。',
+                    '换狂鼠，在掩体后向高台进行抛射弹药压制，利用弹跳炸弹的抛物线和震荡地雷逼退黑百合。',
+                    '换托比昂，在后方掩体旁部署自动炮台，利用炮台自动索敌限制黑百合的露头和架枪时间。'
+                ],
+                correct: 0,
+                explanation: '黑影和源氏是狙击手的天然克星。隐身摸近百合，在其开镜盲区发起突袭，能让高台狙击手彻底丧失输出环境，甚至逼迫其更换前排或近战防守英雄。'
+            },
+            // 问题 8：输出·黑影战术目标
+            {
+                type: 'dps',
+                title: '问题 8：输出·黑影战术目标',
+                question: '进攻直布罗陀防守点。敌方防守核心是高台黑百合，且配有天使牵线。你的战术突破口是？',
+                options: [
+                    '观察敌方站位，直接大招侵入地面人群配合前排打出爆发控制。',
+                    '隐身摸上高台，通过 Hack 打断并集火百合，逼退或击退狙击位，释放地面空间。',
+                    '隐身绕后未果，转而在正面中距离持续开枪，配合己方坦克压制大锤的屏障血量。',
+                    '维持隐身状态留守在己方辅助身边，作为专职防守位，只黑入和集火来切后排的敌方刺客。'
+                ],
+                correct: 1,
+                explanation: '黑影是高台长手脆皮的梦魇。干扰并击杀高台长枪位（黑百合），释放己方地面和辅助的推进生存空间是刺客职责。'
+            },
+            // 问题 9：辅助·安娜极限求生
+            {
+                type: 'support',
+                title: '问题 9：辅助·安娜极限求生',
+                question: '敌方铁拳蓄力右拳强行切入，正准备直指你。同时你看到队友源氏被黑入即将被集火。此时手握【睡针】和【手雷】你该？',
+                options: [
+                    '睡针极力瞄准并击睡突脸的铁拳，手雷砸向自己和铁拳抬血并施加禁疗。',
+                    '将睡针射向远处的敌方狙击，手雷扔给残血的源氏。',
+                    '优先向急需解控的源氏方向交出睡针压制集火人员，手雷扔给铁拳尝试打断技能。',
+                    '依靠走位拉扯寻找掩体自保，保留手雷和睡针等铁拳交完位移技能后再进行精准释放。'
+                ],
+                correct: 0,
+                explanation: '自保是安娜首要任务。击睡近身搏击的重装铁拳并自爆瓶抬血，既解除了生命威胁，又给队友留出了集火突前怪的黄金时间。'
+            },
+            // 问题 10：辅助·反制突脸
+            {
+                type: 'support',
+                title: '问题 10：辅助·反制突脸',
+                question: '敌方重装是末日铁拳，配合 DJ 频繁高机动切入己方阵营强杀脆皮。你和另一个奶妈频频暴毙。为了克制这种强突脸，你该补出什么辅助？',
+                options: [
+                    '换布里吉塔（锤妹），利用【流星飞锤】击退和盾击阻挡铁拳，用盾和横扫为后排建立安全区。',
+                    '换天使，利用守护天使时刻飞跃高台和法拉组成双飞，通过天空火力压制逼迫铁拳回撤防守。',
+                    '换莫伊拉，利用消散的无敌位移进行高频自保拉扯，并在侧翼进行高额的生化球与范围治疗。',
+                    '换禅雅塔，给铁拳挂易伤，配合长枪队友集火，利用高爆头伤害对其进行反压制。'
+                ],
+                correct: 0,
+                explanation: '布里吉塔是守望先锋反放狗、反突脸的辅助之魂。飞锤打断铁拳蓄力、盾击阻挡其前推，是保护己方长枪和另一个主奶的黄金护盾。'
+            },
+            // 问题 11：输出·脉冲炸弹投掷
+            {
+                type: 'dps',
+                title: '问题 11：输出·脉冲炸弹投掷',
+                question: '双方在推车路线混战。此时你有终极技能【脉冲炸弹】。敌方是：奥丽莎、源氏、巴蒂斯特（刚交过灯）、安娜。你的首要粘弹目标是？',
+                options: [
+                    '全身黄甲的重装奥丽莎，限制其血线。',
+                    '击杀半空中交过二段跳、落地轨迹确定的源氏，防止其后续拔刀。',
+                    '没了灯自保的安娜或巴蒂斯特，完成定点秒杀。',
+                    '将脉冲炸弹粘在车边，利用运载目标作为掩体，大范围威慑敌方防线。'
+                ],
+                correct: 2,
+                explanation: '脉冲炸弹伤害固定。粘中无灯保护的脆皮辅助可以直接抹去对方的核心治疗资源，瞬间建立团队绝对人数和血量优势。'
+            },
+            // 问题 12：辅助·莫伊拉大招时机
+            {
+                type: 'support',
+                title: '问题 12：辅助·莫伊拉大招时机',
+                question: '里阿尔托狭窄回廊团战。己方前排盾已碎，血量堪忧，敌方前排也全是残血并扎堆。你开启大招【聚合射线】的首要朝向是？',
+                options: [
+                    '侧身斜线射击，只照射敌方后排脆皮试图偷掉一个。',
+                    '完全向后方，专职给己方血量极健康的狙击手奶血。',
+                    '一箭双雕，瞄准重合线，同时贯穿己方残血前排与敌方残血前排，兼顾抬血与收割。',
+                    '保持大招在最大射程外输出，专注于高频治疗己方辅助，确保队伍双后排存活。'
+                ],
+                correct: 2,
+                explanation: '聚合射线具有无限穿透属性。一条直线上同时重合己方前排与敌方血线，最能将大招每秒 140 治疗和 70 伤害的混战价值最大化。'
+            },
+            // 问题 13：重装·查莉娅屏障分配
+            {
+                type: 'tank',
+                title: '问题 13：重装·查莉娅屏障分配',
+                question: '己方源氏拔刀前冲（纳米源氏），但同时己方安娜被敌方末日铁拳锤飞击退处于危险边缘。你的两个【粒子屏障（泡泡）】给谁？',
+                options: [
+                    '给源氏一个保他顺利开出前两刀，另一个保身处险境的安娜避免被秒。',
+                    '两个泡泡全部套在拔刀源氏身上，确保他能顶着所有控制和爆发无压力完成击杀。',
+                    '将两个泡泡全部留给自己上前线拉扯吸收伤害，将能量拉满后再由自己带头冲锋。',
+                    '套给对方血厚防高、技能全在的另外一个坦克。'
+                ],
+                correct: 0,
+                explanation: '毛妹在均势下必须做到双重兼顾。给刀锋源氏套罩能免疫硬控，给后排安娜套罩能破坏铁拳的致死连招，双核保全机制极强。'
+            },
+            // 问题 14：输出·地推阵容协同
+            {
+                type: 'dps',
+                title: '问题 14：输出·地推阵容协同',
+                question: '己方坦克是大锤，奶妈是 DJ 和安娜，整体是典型的地推突脸阵容。为了最大化团队协同，在窄道和拐角发挥地推优势，你作为 DPS 应该拿出哪个英雄？',
+                options: [
+                    '换黑百合，在地图尽头的长直道架枪，提供高额单点威慑，试图从侧翼撕开突破口。',
+                    '换小美（Mei），利用冰墙隔离敌方脱节的前排（关门打狗），或分割战场打出窒息的地推效果。',
+                    '换法老之鹰，利用空中高度和弹道压制，从上方为地推大队提供炮火掩护和击退控场。',
+                    '换黑影，隐身绕后黑入敌方后排，通过偷袭和骚扰牵制敌方奶线，在敌后撕扯阵线。'
+                ],
+                correct: 1,
+                explanation: '地推最怕拉扯，最爱窄道决战。小美的冰墙是分割对方坦克和奶线的神技，是传统地推（大锤地推）最完美的 DPS 搭档之一。'
+            },
+            // 问题 15：辅助·天使复活原则
+            {
+                type: 'support',
+                title: '问题 15：辅助·天使复活原则',
+                question: '皇家赛道防守桥下，己方西格玛在敌方集火的核心交叉口阵亡，周围有奥丽莎和 76 的重火力覆盖。你该不该【复活】？',
+                options: [
+                    '依靠"女武神"大招的超强回复和移速，直接滑铲进入交火中心强行复活西格玛。',
+                    '呼叫另外的输出位拉开火力线进行正面拉扯，寻找其护盾破损的瞬间进行复活。',
+                    '放弃此次复活。利用蓝线死死牵住生还的 DPS（如 76 或索杰恩）撤退寻找拉扯，坚决不送双人头。',
+                    '暂时在掩体后拉扯，等待己方副 T 补充占位并创造掩护瞬息，再交复活拉起西格玛。'
+                ],
+                correct: 2,
+                explanation: '"白给复活"是天使最大的禁忌。在敌方交叉火力充沛且无坚固屏障庇护时，盲目去拉人会导致天使和坦克一起白给。应当及时保活活人。'
+            },
+            // 问题 16：重装·面对堡垒毛加
+            {
+                type: 'tank',
+                title: '问题 16：重装·面对堡垒毛加',
+                question: '敌方毛加和堡垒在正面火力极猛，己方大锤的盾瞬间被蒸发。面对这种"正面枪林弹雨绞肉机"阵容，你作为坦克最合理的变阵是？',
+                options: [
+                    '换西格玛，利用【动能俘获】吸收子弹转化为蓝甲，用实验屏障阻隔枪线，拉扯打时间差。',
+                    '换温斯顿（猩猩），利用大跳配合大招跃至后排，通过电击枪穿透护盾限制堡垒身后辅助的治疗。',
+                    '换路霸，尝试用钩子把开着超载的毛加直接钩进己方人群肉搏。',
+                    '换渣客女王，利用"命令怒吼"的移速与绿血加成，带领队伍快速贴脸进入近战肉搏。'
+                ],
+                correct: 0,
+                explanation: '西格玛是克制堡垒/毛加双枪爆发最优秀的选择。动能俘获（吸）能完全化解堡垒坦克加特林和毛加双枪的爆发伤害，并转化为巨额护盾，实现完美的攻守转换。'
+            },
+            // 问题 17：输出·半藏侦察
+            {
+                type: 'dps',
+                title: '问题 17：输出·半藏侦察',
+                question: '多拉多 A 点进攻，高台拐角敌方拉枪线十分严密，你无法盲视野获取站位。手里的【音波箭】射向哪里？',
+                options: [
+                    '射向正在前排抗线的重装胸部，协助己方进行重装盾量压制。',
+                    '射向二楼高台关键转角墙壁，为全队提供透视视野，掌握敌方防守集火站位。',
+                    '将音波箭射向己方后排地面，用于防范黑影隐身摸人或刺客绕后。',
+                    '暂时保留音波箭，等敌方前排盾碎或交完护盾技能后，射向坦克头部造成高额伤害。'
+                ],
+                correct: 1,
+                explanation: '半藏音波箭是极强战略眼。在拐角视线盲区提供侦察视野，能让输出位和坦克提前规避集火危险，做好拉枪线准备。'
+            },
+            // 问题 18：辅助·防范黑影EMP
+            {
+                type: 'support',
+                title: '问题 18：辅助·防范黑影EMP',
+                question: '敌方黑影的"电磁脉冲（EMP）"每波团都能准时瘫痪己方所有防御，大招防不胜防。为了最有效化解这波大招攻势，你作为辅助该拿出谁？',
+                options: [
+                    '换巴蒂斯特，利用高台站位避开第一波电磁脉冲，在 EMP 落下后立刻对地面交出锁血灯自保和救人。',
+                    '换禅雅塔，大招"圣"可以瞬间在 EMP 之后把全队血线抬满。',
+                    '换雾子或卢西奥（DJ），隐藏站位避免被同时波及，在 EMP 后雾子瞬步铃铛秒解负面，或卢西奥反手敲出音障抬盾保人。',
+                    '换莫伊拉，利用消散的瞬间无敌避开 EMP 波及，并在随后扔出生化治疗球全力抬升血线。'
+                ],
+                correct: 2,
+                explanation: '黑影 EMP 是瞬发型团灭神器。作为防守大招，雾子和 DJ 必须保持分散站位不被首波波及，随后雾子铃铛秒解禁疗/黑入，或 DJ 反手敲出音障，能彻底粉碎对方的集火爆发。'
+            },
+            // 问题 19：重装·拉玛刹形态
+            {
+                type: 'tank',
+                title: '问题 19：重装·拉玛刹形态',
+                question: '在香巴里寺院推车。己方在弯道正面遭遇战。何时切换为【天神模式（天神形态）】？',
+                options: [
+                    '没面敌方时提前开启天神形态，在行进路线前排探路吸收首波火力。',
+                    '在智械形态下用虚空结界屏障拉扯、用远程手杖消耗，等敌方技能（如大锤倒地或安娜睡针）交出、近身战开打后切换形态开打疯狂输出。',
+                    '将天神形态完全作为保命和抬血技能，等自身血量见底时开启，利用瞬间增加的护甲逃生。',
+                    '坚守智械形态，在远端利用虚空屏障进行阵地防御，并通过远程手杖持续压制大锤的盾量。'
+                ],
+                correct: 1,
+                explanation: '拉玛刹天神模式拥有极强近战爆发与黄甲。智械姿态拉扯骗技能，随后化身近战一波推平是标准操作。'
+            },
+            // 问题 20：辅助·伊拉里塔位
+            {
+                type: 'support',
+                title: '问题 20：辅助·伊拉里塔位',
+                question: '罗马竞技场（Push）地图。敌方源氏、猩猩正蠢蠢欲动准备跳己方高台。你的【治疗太阳能路灯】放哪里？',
+                options: [
+                    '放在己方前排盾牌正后方的地面，利用护盾完全保护治疗塔的输出视野。',
+                    '黏贴在大猩猩和敌方前排脸上，吸引他们的火力。',
+                    '隐藏粘在墙壁高点斜角、有天然掩体（敌方不易打到但能辐射队友）的位置，自身留位移防狗。',
+                    '贴在己方后排的长椅和墙角，在确保射程覆盖的同时强迫敌方狗位转角打塔。'
+                ],
+                correct: 2,
+                explanation: '伊拉里的治疗塔是团队续航灵魂。藏在高处物理死角、让地方必须转角拉身位才能打掉，能最大化发挥其全自动高额单体奶人效率。'
+            }
+        ];
+
+        // ==================== 结算文案 ====================
+        const rankResults = [
+            {
+                minScore: 0,
+                maxScore: 15,
+                title: '活区拉完了',
+                subtitle: '下饭届终极神厨',
+                description: '美团外卖没你不能开张，队友原地红温，操作全无但嘴最硬。建议先去快速模式练练基础，别让队友再点举报了。'
+            },
+            {
+                minScore: 20,
+                maxScore: 40,
+                title: '云玩家',
+                subtitle: '看直播学了一身理论',
+                description: '脑子会了手没会，理论一套一套，实战全靠缘分。看直播时指点江山，自己操作时原地红温。'
+            },
+            {
+                minScore: 45,
+                maxScore: 65,
+                title: '终极混子',
+                subtitle: '天梯隐形打工人',
+                description: '顺风大喊我可以，逆风悄悄隐身流。白嫖点赞是你的拿手好戏，团战边缘OB是你的专属技能。'
+            },
+            {
+                minScore: 70,
+                maxScore: 85,
+                title: '带飞大爹',
+                subtitle: '队友心里的白月光',
+                description: '保人拉满、集火清晰，全场最粗大腿。点赞被点爆，队友看到你就知道这把稳了。'
+            },
+            {
+                minScore: 90,
+                maxScore: 100,
+                title: '最强大神',
+                subtitle: '国服最后一块牌面',
+                description: '意识通电、计算CD、精准算大，反手被举报开挂。你就是那个让对手绝望、队友膜拜的存在。'
+            }
+        ];
+
+        // ==================== 动态副文案生成 ====================
+        function generateDynamicSubtitle(tankPct, dpsPct, supportPct) {
+            const scores = [
+                { name: 'T空间掌控', pct: tankPct },
+                { name: 'C集火收割', pct: dpsPct },
+                { name: 'S协同保活', pct: supportPct }
+            ].sort((a, b) => b.pct - a.pct);
+            
+            const highest = scores[0];
+            const lowest = scores[2];
+            const middle = scores[1];
+            
+            // 判断是否均衡（三者差距在20%以内）
+            const isBalanced = (highest.pct - lowest.pct) <= 20;
+            
+            if (isBalanced) {
+                if (highest.pct >= 70) {
+                    return '三位置意识全通，六边形战士实锤，国服全能选手就是你，哪里需要哪里搬。';
+                } else if (highest.pct >= 50) {
+                    return '三位置意识均衡发展，没有明显短板，团队万金油，哪里缺人哪里顶。';
+                } else {
+                    return '三位置意识都还在入门阶段，建议先专注一个位置深挖，再考虑全面发展。';
+                }
+            }
+            
+            // 偏科情况：根据最高和最低生成文案
+            const highLowMap = {
+                'T空间掌控-C集火收割': '重装意识拉满，开团时机拿捏到位，但输出位切入还需多练，别总想着当坦克去切后排。',
+                'T空间掌控-S协同保活': '空间掌控一流，但辅助保人意识有待提升，队友血线全靠自愈，建议多练奶位理解治疗节奏。',
+                'C集火收割-T空间掌控': '输出位意识拉满，集火收割清晰，但重装开团还需多练，别总想着当输出去抗伤害。',
+                'C集火收割-S协同保活': '输出意识拉满，收割时机精准，但辅助保人意识薄弱，队友血线全靠自愈，建议多练奶位。',
+                'S协同保活-T空间掌控': '辅助保人拉满，奶量充足，但重装开团意识薄弱，总想着保人不敢开团，建议多练坦克位。',
+                'S协同保活-C集火收割': '辅助保人一流，但输出位切入意识薄弱，总想着保人不敢输出，建议多练输出位找切入感。'
+            };
+            
+            const key = `${highest.name}-${lowest.name}`;
+            const baseSubtitle = highLowMap[key] || '意识发展不均衡，建议补强短板位置，成为真正的全能选手。';
+            
+            // 根据最高分调整语气
+            if (highest.pct >= 70) {
+                return baseSubtitle;
+            } else if (highest.pct >= 50) {
+                return baseSubtitle.replace('拉满', '尚可').replace('一流', '尚可').replace('精准', '尚可');
+            } else {
+                return `三位置意识都还需提升，${baseSubtitle.substring(0, 15)}...建议多看直播学习理论。`;
+            }
+        }
+
+        // ==================== 全局变量 ====================
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let tankCorrect = 0, tankTotal = 0;
+        let dpsCorrect = 0, dpsTotal = 0;
+        let supportCorrect = 0, supportTotal = 0;
+        let audioContext = null;
+        let shuffledQuestions = [];
+
+        // ==================== Web Audio API 音效合成 ====================
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            const now = audioContext.currentTime;
+            
+            switch(type) {
+                case 'click':
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(800, now);
+                    oscillator.frequency.exponentialRampToValueAtTime(400, now + 0.1);
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.1);
+                    break;
+                    
+                case 'correct':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(523.25, now); // C5
+                    oscillator.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                    oscillator.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                    gainNode.gain.setValueAtTime(0.15, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.4);
+                    break;
+                    
+                case 'wrong':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(200, now);
+                    oscillator.frequency.exponentialRampToValueAtTime(100, now + 0.3);
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.3);
+                    break;
+                    
+                case 'finish':
+                    // 大三和弦琶音
+                    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                    notes.forEach((freq, i) => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now + i * 0.15);
+                        gain.gain.setValueAtTime(0.12, now + i * 0.15);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.15 + 0.3);
+                        osc.start(now + i * 0.15);
+                        osc.stop(now + i * 0.15 + 0.3);
+                    });
+                    break;
+            }
+        }
+
+        // ==================== 星空粒子背景 ====================
+        function initStarfield() {
+            const canvas = document.getElementById('starfield');
+            const ctx = canvas.getContext('2d');
+            
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+            
+            const stars = [];
+            const numStars = 100;
+            
+            for (let i = 0; i < numStars; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 0.5,
+                    speedX: (Math.random() - 0.5) * 0.3,
+                    speedY: (Math.random() - 0.5) * 0.3,
+                    opacity: Math.random() * 0.5 + 0.3,
+                    isOrange: Math.random() < 0.1 // 10% 的星星是橙色
+                });
+            }
+            
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                stars.forEach(star => {
+                    star.x += star.speedX;
+                    star.y += star.speedY;
+                    
+                    if (star.x < 0) star.x = canvas.width;
+                    if (star.x > canvas.width) star.x = 0;
+                    if (star.y < 0) star.y = canvas.height;
+                    if (star.y > canvas.height) star.y = 0;
+                    
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                    ctx.fillStyle = star.isOrange 
+                        ? `rgba(249, 158, 26, ${star.opacity})` 
+                        : `rgba(255, 255, 255, ${star.opacity})`;
+                    ctx.fill();
+                });
+                
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+
+        // ==================== OW Logo 绘制 ====================
+        function drawLogo() {
+            const canvas = document.getElementById('logoCanvas');
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 80;
+            
+            // 绘制外圈
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = '#f99e1a';
+            ctx.lineWidth = 8;
+            ctx.stroke();
+            
+            // 绘制内圈
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius - 15, 0, Math.PI * 2);
+            ctx.strokeStyle = '#f99e1a';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            
+            // 绘制分割线
+            for (let i = 0; i < 6; i++) {
+                const angle = (i * Math.PI) / 3;
+                ctx.beginPath();
+                ctx.moveTo(centerX + (radius - 15) * Math.cos(angle), centerY + (radius - 15) * Math.sin(angle));
+                ctx.lineTo(centerX + radius * Math.cos(angle), centerY + radius * Math.sin(angle));
+                ctx.strokeStyle = '#f99e1a';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+            }
+            
+            // 绘制中心圆
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 20, 0, Math.PI * 2);
+            ctx.fillStyle = '#f99e1a';
+            ctx.fill();
+        }
+
+        // ==================== 雷达图绘制 ====================
+        function drawRadarChart(tankPercent, dpsPercent, supportPercent) {
+            const canvas = document.getElementById('radarCanvas');
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 100;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制背景三角形
+            const angles = [-Math.PI / 2, Math.PI / 6, 5 * Math.PI / 6]; // 上、右下、左下
+            const labels = ['T', 'C', 'S'];
+            
+            // 绘制同心三角形
+            for (let level = 1; level <= 4; level++) {
+                const levelRadius = (radius / 4) * level;
+                ctx.beginPath();
+                angles.forEach((angle, i) => {
+                    const x = centerX + levelRadius * Math.cos(angle);
+                    const y = centerY + levelRadius * Math.sin(angle);
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.closePath();
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+            
+            // 绘制轴线
+            angles.forEach((angle, i) => {
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(centerX + radius * Math.cos(angle), centerY + radius * Math.sin(angle));
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // 绘制标签
+                const labelX = centerX + (radius + 20) * Math.cos(angle);
+                const labelY = centerY + (radius + 20) * Math.sin(angle);
+                ctx.font = 'bold 16px Arial';
+                ctx.fillStyle = '#1e293b';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(labels[i], labelX, labelY);
+            });
+            
+            // 绘制数据三角形
+            const values = [tankPercent, dpsPercent, supportPercent];
+            ctx.beginPath();
+            angles.forEach((angle, i) => {
+                const valueRadius = (radius * values[i]) / 100;
+                const x = centerX + valueRadius * Math.cos(angle);
+                const y = centerY + valueRadius * Math.sin(angle);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.closePath();
+            
+            // 填充渐变
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, 'rgba(249, 158, 26, 0.6)');
+            gradient.addColorStop(1, 'rgba(255, 133, 26, 0.6)');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            // 绘制边框和发光效果
+            ctx.strokeStyle = '#f99e1a';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // 绘制数据点
+            angles.forEach((angle, i) => {
+                const valueRadius = (radius * values[i]) / 100;
+                const x = centerX + valueRadius * Math.cos(angle);
+                const y = centerY + valueRadius * Math.sin(angle);
+                
+                // 发光效果
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(249, 158, 26, 0.3)';
+                ctx.fill();
+                
+                // 数据点
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#f99e1a';
+                ctx.fill();
+            });
+        }
+
+        // ==================== 题目打乱 ====================
+        function shuffleQuestions() {
+            shuffledQuestions = [...questions];
+            // 不打乱题目顺序，只打乱每题的选项
+            shuffledQuestions.forEach(q => {
+                const originalOptions = q.options.map((opt, idx) => ({ text: opt, isCorrect: idx === q.correct }));
+                for (let i = originalOptions.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [originalOptions[i], originalOptions[j]] = [originalOptions[j], originalOptions[i]];
+                }
+                q.shuffledOptions = originalOptions;
+                q.newCorrectIndex = originalOptions.findIndex(opt => opt.isCorrect);
+            });
+        }
+
+        // ==================== 页面切换 ====================
+        function showPage(pageId) {
+            document.getElementById('startPage').classList.add('hidden');
+            document.getElementById('questionPage').classList.add('hidden');
+            document.getElementById('resultsPage').classList.add('hidden');
+            document.getElementById(pageId).classList.remove('hidden');
+            document.getElementById(pageId).classList.add('fade-in');
+        }
+
+        // ==================== 显示题目 ====================
+        function showQuestion() {
+            const question = shuffledQuestions[currentQuestionIndex];
+            
+            // 更新进度
+            document.getElementById('progressText').textContent = `${currentQuestionIndex + 1} / ${shuffledQuestions.length}`;
+            document.getElementById('progressBar').style.width = `${((currentQuestionIndex + 1) / shuffledQuestions.length) * 100}%`;
+            
+            // 更新位置徽章
+            const badge = document.getElementById('positionBadge');
+            badge.className = 'px-3 py-1 rounded-full text-white text-xs font-bold';
+            if (question.type === 'tank') {
+                badge.classList.add('badge-tank');
+                badge.textContent = '重装位';
+            } else if (question.type === 'dps') {
+                badge.classList.add('badge-dps');
+                badge.textContent = '输出位';
+            } else {
+                badge.classList.add('badge-support');
+                badge.textContent = '辅助位';
+            }
+            
+            // 显示题目标题和题目
+            document.getElementById('questionTitle').textContent = question.title || '';
+            document.getElementById('questionText').textContent = question.question;
+            
+            // 生成选项
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            question.shuffledOptions.forEach((option, index) => {
+                const optionCard = document.createElement('div');
+                optionCard.className = 'option-card bg-white rounded-xl p-4 border-2 border-gray-200 shadow-md';
+                optionCard.innerHTML = `
+                    <div class="flex items-start">
+                        <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
+                            <span class="text-xs text-gray-500">${String.fromCharCode(65 + index)}</span>
+                        </div>
+                        <p class="text-sm text-gray-700 leading-relaxed">${option.text}</p>
+                    </div>
+                `;
+                optionCard.addEventListener('click', () => selectOption(index));
+                optionsContainer.appendChild(optionCard);
+            });
+            
+            // 隐藏解析面板
+            document.getElementById('explanationPanel').classList.add('hidden');
+        }
+
+        // ==================== 选择选项 ====================
+        function selectOption(index) {
+            const question = shuffledQuestions[currentQuestionIndex];
+            const options = document.querySelectorAll('.option-card');
+            
+            // 禁用所有选项
+            options.forEach(opt => opt.style.pointerEvents = 'none');
+            
+            // 显示正确和错误答案
+            if (index === question.newCorrectIndex) {
+                options[index].classList.add('correct');
+                score++;
+                playSound('correct');
+                
+                // 更新各位置得分
+                if (question.type === 'tank') tankCorrect++;
+                else if (question.type === 'dps') dpsCorrect++;
+                else supportCorrect++;
+            } else {
+                options[index].classList.add('wrong');
+                options[question.newCorrectIndex].classList.add('correct');
+                playSound('wrong');
+            }
+            
+            // 更新各位置总数
+            if (question.type === 'tank') tankTotal++;
+            else if (question.type === 'dps') dpsTotal++;
+            else supportTotal++;
+            
+            // 显示解析
+            document.getElementById('explanationText').textContent = question.explanation;
+            document.getElementById('explanationPanel').classList.remove('hidden');
+            
+            // 更新按钮文本
+            const nextBtn = document.getElementById('nextBtn');
+            if (currentQuestionIndex === shuffledQuestions.length - 1) {
+                nextBtn.textContent = '查看结果';
+            } else {
+                nextBtn.textContent = '下一题';
+            }
+        }
+
+        // ==================== 显示结果 ====================
+        function showResults() {
+            playSound('finish');
+            
+            // 计算百分制分数（每题5分，满分100分）
+            const percentageScore = Math.round((score / shuffledQuestions.length) * 100);
+            
+            // 更新分数显示为百分制
+            document.getElementById('scoreText').textContent = `${percentageScore} 分`;
+            
+            // 计算各位置得分率
+            const tankPercent = tankTotal > 0 ? Math.round((tankCorrect / tankTotal) * 100) : 0;
+            const dpsPercent = dpsTotal > 0 ? Math.round((dpsCorrect / dpsTotal) * 100) : 0;
+            const supportPercent = supportTotal > 0 ? Math.round((supportCorrect / supportTotal) * 100) : 0;
+            
+            // 更新雷达图
+            document.getElementById('tankScore').textContent = `${tankPercent}%`;
+            document.getElementById('dpsScore').textContent = `${dpsPercent}%`;
+            document.getElementById('supportScore').textContent = `${supportPercent}%`;
+            drawRadarChart(tankPercent, dpsPercent, supportPercent);
+            
+            // 显示对应段位
+            const rank = rankResults.find(r => percentageScore >= r.minScore && percentageScore <= r.maxScore);
+            if (rank) {
+                document.getElementById('rankTitle').textContent = rank.title;
+                document.getElementById('rankSubtitle').textContent = rank.subtitle;
+                document.getElementById('rankDescription').textContent = rank.description;
+            }
+            
+            // 生成动态副文案（基于各位置得分率）
+            const dynamicSubtitle = generateDynamicSubtitle(tankPercent, dpsPercent, supportPercent);
+            document.getElementById('rankDescription').textContent = dynamicSubtitle;
+            
+            showPage('resultsPage');
+        }
+
+        // ==================== 生成海报 ====================
+        function generatePoster() {
+            playSound('click');
+            
+            // 创建离屏 Canvas
+            const posterCanvas = document.createElement('canvas');
+            posterCanvas.width = 750;
+            posterCanvas.height = 1334;
+            const ctx = posterCanvas.getContext('2d');
+            
+            // 绘制背景渐变
+            const bgGradient = ctx.createLinearGradient(0, 0, 0, 1334);
+            bgGradient.addColorStop(0, '#1e293b');
+            bgGradient.addColorStop(1, '#0f172a');
+            ctx.fillStyle = bgGradient;
+            ctx.fillRect(0, 0, 750, 1334);
+            
+            // 绘制装饰圆圈
+            ctx.beginPath();
+            ctx.arc(375, 300, 200, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(249, 158, 26, 0.1)';
+            ctx.fill();
+            
+            // 绘制标题
+            ctx.font = 'bold 48px Arial';
+            ctx.fillStyle = '#f99e1a';
+            ctx.textAlign = 'center';
+            ctx.fillText('守望先锋国服意识评测', 375, 150);
+            
+            // 计算百分制分数
+            const percentageScore = Math.round((score / shuffledQuestions.length) * 100);
+            
+            // 绘制分数（百分制）
+            ctx.font = 'bold 120px Arial';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(`${percentageScore} 分`, 375, 320);
+            
+            // 计算各位置得分率
+            const tankPercent = tankTotal > 0 ? Math.round((tankCorrect / tankTotal) * 100) : 0;
+            const dpsPercent = dpsTotal > 0 ? Math.round((dpsCorrect / dpsTotal) * 100) : 0;
+            const supportPercent = supportTotal > 0 ? Math.round((supportCorrect / supportTotal) * 100) : 0;
+            
+            // 获取段位信息
+            const rank = rankResults.find(r => percentageScore >= r.minScore && percentageScore <= r.maxScore);
+            if (rank) {
+                // 绘制段位标题
+                ctx.font = 'bold 56px Arial';
+                ctx.fillStyle = '#f99e1a';
+                ctx.fillText(rank.title, 375, 450);
+                
+                // 绘制段位副标题
+                ctx.font = '32px Arial';
+                ctx.fillStyle = '#94a3b8';
+                ctx.fillText(rank.subtitle, 375, 510);
+                
+                // 生成动态副文案
+                const dynamicSubtitle = generateDynamicSubtitle(tankPercent, dpsPercent, supportPercent);
+                
+                // 绘制描述（自动换行）
+                ctx.font = '28px Arial';
+                ctx.fillStyle = '#cbd5e1';
+                const maxWidth = 650;
+                const lineHeight = 40;
+                const words = dynamicSubtitle.split('');
+                let line = '';
+                let y = 600;
+                
+                for (let i = 0; i < words.length; i++) {
+                    const testLine = line + words[i];
+                    const metrics = ctx.measureText(testLine);
+                    if (metrics.width > maxWidth && i > 0) {
+                        ctx.fillText(line, 375, y);
+                        line = words[i];
+                        y += lineHeight;
+                    } else {
+                        line = testLine;
+                    }
+                }
+                ctx.fillText(line, 375, y);
+            }
+            
+            // 绘制雷达图
+            const radarCenterX = 375;
+            const radarCenterY = 900;
+            const radarRadius = 150;
+            
+            // 绘制背景三角形
+            const angles = [-Math.PI / 2, Math.PI / 6, 5 * Math.PI / 6];
+            const labels = ['T 空间掌控', 'C 集火收割', 'S 协同保活'];
+            const values = [
+                tankTotal > 0 ? (tankCorrect / tankTotal) * 100 : 0,
+                dpsTotal > 0 ? (dpsCorrect / dpsTotal) * 100 : 0,
+                supportTotal > 0 ? (supportCorrect / supportTotal) * 100 : 0
+            ];
+            
+            // 绘制同心三角形
+            for (let level = 1; level <= 4; level++) {
+                const levelRadius = (radarRadius / 4) * level;
+                ctx.beginPath();
+                angles.forEach((angle, i) => {
+                    const x = radarCenterX + levelRadius * Math.cos(angle);
+                    const y = radarCenterY + levelRadius * Math.sin(angle);
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.closePath();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+            
+            // 绘制轴线
+            angles.forEach((angle, i) => {
+                ctx.beginPath();
+                ctx.moveTo(radarCenterX, radarCenterY);
+                ctx.lineTo(radarCenterX + radarRadius * Math.cos(angle), radarCenterY + radarRadius * Math.sin(angle));
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // 绘制标签
+                const labelX = radarCenterX + (radarRadius + 40) * Math.cos(angle);
+                const labelY = radarCenterY + (radarRadius + 40) * Math.sin(angle);
+                ctx.font = 'bold 24px Arial';
+                ctx.fillStyle = '#ffffff';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(labels[i], labelX, labelY);
+            });
+            
+            // 绘制数据三角形
+            ctx.beginPath();
+            angles.forEach((angle, i) => {
+                const valueRadius = (radarRadius * values[i]) / 100;
+                const x = radarCenterX + valueRadius * Math.cos(angle);
+                const y = radarCenterY + valueRadius * Math.sin(angle);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.closePath();
+            
+            // 填充渐变
+            const radarGradient = ctx.createLinearGradient(radarCenterX - radarRadius, radarCenterY - radarRadius, radarCenterX + radarRadius, radarCenterY + radarRadius);
+            radarGradient.addColorStop(0, 'rgba(249, 158, 26, 0.8)');
+            radarGradient.addColorStop(1, 'rgba(255, 133, 26, 0.8)');
+            ctx.fillStyle = radarGradient;
+            ctx.fill();
+            
+            // 绘制边框
+            ctx.strokeStyle = '#f99e1a';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            
+            // 绘制数据点
+            angles.forEach((angle, i) => {
+                const valueRadius = (radarRadius * values[i]) / 100;
+                const x = radarCenterX + valueRadius * Math.cos(angle);
+                const y = radarCenterY + valueRadius * Math.sin(angle);
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 10, 0, Math.PI * 2);
+                ctx.fillStyle = '#f99e1a';
+                ctx.fill();
+            });
+            
+            // 绘制底部提示
+            ctx.font = '24px Arial';
+            ctx.fillStyle = '#64748b';
+            ctx.fillText('长按保存图片分享给好友', 375, 1280);
+            
+            // 生成图片
+            const dataUrl = posterCanvas.toDataURL('image/png');
+            document.getElementById('posterImg').src = dataUrl;
+            document.getElementById('posterOverlay').classList.add('active');
+        }
+
+        // ==================== 事件监听 ====================
+        document.getElementById('startBtn').addEventListener('click', () => {
+            initAudio();
+            playSound('click');
+            shuffleQuestions();
+            currentQuestionIndex = 0;
+            score = 0;
+            tankCorrect = dpsCorrect = supportCorrect = 0;
+            tankTotal = dpsTotal = supportTotal = 0;
+            showQuestion();
+            showPage('questionPage');
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            playSound('click');
+            currentQuestionIndex++;
+            if (currentQuestionIndex < shuffledQuestions.length) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        });
+
+        document.getElementById('restartBtn').addEventListener('click', () => {
+            playSound('click');
+            showPage('startPage');
+        });
+
+        document.getElementById('generatePosterBtn').addEventListener('click', generatePoster);
+
+        document.getElementById('closePoster').addEventListener('click', () => {
+            document.getElementById('posterOverlay').classList.remove('active');
+        });
+
+        // ==================== 初始化 ====================
+        window.addEventListener('load', () => {
+            initStarfield();
+            drawLogo();
+        });
+    </script>
+</body>
+</html>
